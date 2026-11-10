@@ -24,11 +24,18 @@
 
 <br>
 
-> **Patchwork transforme votre agent IA en développeur FileMaker.** Demandez en langage courant. L'agent ajoute des rubriques, écrit des scripts, crée des listes de valeurs et restyle des modèles dans un vrai fichier `.fmp12`. Chaque modification est vérifiée, versionnée et réversible, et votre fichier d'origine n'est jamais touché.
+> **Vendredi, 16 h. Un client demande « juste un petit champ de plus » sur le modèle de détail.**
+> Vous connaissez la suite : définir la rubrique, copier l'étiquette, décaler chaque objet en dessous, agrandir la partie… puis tout recommencer sur le modèle suivant.
+>
+> **Patchwork confie ces clics à votre agent IA.** Demandez simplement, avec vos mots, comme vous le demanderiez à un collègue. Votre agent ajoute la rubrique et la place exactement où vous l'avez dit, écrit des scripts, crée des listes de valeurs et refait le style des modèles, dans un vrai fichier `.fmp12`. Chaque modification est vérifiée, chaque modification peut être annulée, et votre fichier d'origine n'est jamais touché.
+
+Gratuit et open source. Fonctionne avec Claude Code, Cursor, Codex et Antigravity.
 
 <p align="center"><a href="https://youtu.be/g5UkJLiYAhA"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/video-card.fr.jpg" alt="Regarder la présentation de Patchwork en 90 secondes sur YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/g5UkJLiYAhA">Regarder la présentation en 90 secondes sur YouTube</a> · <a href="https://youtu.be/AkFhBpB0YYY">English version</a></sub></p>
 
 ## Démarrage
+
+Trois commandes, et ensuite vous parlez simplement à votre agent.
 
 ```bash
 pip install fm-patchwork
@@ -38,13 +45,17 @@ patchwork init .          # branche ce dossier pour Claude Code, Cursor, Codex e
 
 Sans installation, avec [uv](https://docs.astral.sh/uv/) : `uvx fm-patchwork doctor`, et `uvx fm-patchwork mcp` comme commande du serveur MCP.
 
-Puis demandez à votre agent : *« Ouvre Invoice.fmp12 et ajoute une rubrique Status dans Clients. »*
+Puis demandez à votre agent : *« Ouvre Invoice.fmp12 et ajoute une rubrique Status dans Clients. »* C'est tout.
 
-<sub>Patchwork n'a aucune dépendance. Il pilote FMUpgradeTool et FMDeveloperTool, fournis avec FileMaker Server. L'installeur d'essai gratuit suffit et aucun serveur n'a besoin de tourner : [installer les outils Claris](https://github.com/Abdeltoto/patchwork/blob/main/docs/install-fmupgradetool.md).</sub>
+### Bon à savoir
+
+- **Il modifie la structure, pas les enregistrements.** Rubriques, scripts, modèles, listes de valeurs, thèmes. Pour vos données, utilisez la Data API ou OData.
+- **Il travaille sur des fichiers fermés, pas sur des fichiers hébergés.** Modifiez une copie, testez-la, puis déployez-la comme d'habitude.
+- **Il a besoin des outils en ligne de commande Claris** (FMUpgradeTool et FMDeveloperTool). Ils sont fournis avec l'installeur de FileMaker Server, la version d'essai gratuite suffit et aucun serveur n'a besoin de tourner : [installer les outils Claris](https://github.com/Abdeltoto/patchwork/blob/main/docs/install-fmupgradetool.md). Patchwork lui-même n'a aucune autre dépendance.
 
 ## En action
 
-Quatre vraies sessions sur la solution gratuite [Claris Invoice](https://marketplace.claris.com/detail/2000.html) : le prompt, les outils appelés par l'agent, et le fichier avant et après.
+Quatre vraies sessions sur la solution gratuite [Claris Invoice](https://marketplace.claris.com/detail/2000.html). Pour chacune : la demande, ce que l'agent a fait, et le fichier avant et après. Aucune maquette.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-schema.png" alt="Prompt : ajouter une rubrique Loyalty Tier et une liste de valeurs. La rubrique et la liste apparaissent dans le fichier." width="100%"></p>
 
@@ -58,23 +69,23 @@ Quatre vraies sessions sur la solution gratuite [Claris Invoice](https://marketp
 
 <p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/how-it-works.jpg" alt="Un agent IA coud des pièces sur un fichier FileMaker, avec une coche de vérification et une flèche d'annulation" width="80%"></p>
 
-Le schéma FileMaker vit dans un fichier binaire, derrière des fenêtres qu'un agent ne peut pas cliquer. Claris fournit une porte d'entrée en ligne de commande, [FMUpgradeTool](https://help.claris.com/en/app-upgrade-tool-guide/content/index.html), mais elle désigne chaque objet par son UUID et **ignore en silence** un patch légèrement faux, tout en affichant `Patch File Applied`.
+Pourquoi votre agent ne peut-il pas le faire seul ? Un fichier FileMaker est un fichier binaire, et sa structure se cache derrière des fenêtres qu'un agent ne peut pas cliquer. Claris fournit bien une porte d'entrée en ligne de commande, [FMUpgradeTool](https://help.claris.com/en/app-upgrade-tool-guide/content/index.html), mais elle est exigeante : chaque objet est désigné par un UUID, et un patch légèrement faux est **ignoré en silence**, alors que l'outil affiche quand même `Patch File Applied`.
 
-Patchwork fait la partie difficile à la place de l'agent :
+Patchwork est l'assistant minutieux entre les deux :
 
 | | |
 |:-:|---|
-| 🧵 **Écrit le patch** | Lit l'export XML du fichier et construit un patch avec les bons UUID, identifiants et catalogues |
-| 🔍 **Vérifie le résultat** | Réexporte le fichier après chaque modification et le compare à la version précédente. Un patch ignoré est refusé |
-| 🧭 **Prévient avant de casser** | Avant une suppression, liste les scripts, modèles et calculs qui utilisent l'objet, et s'arrête tant que vous n'avez pas confirmé |
-| 🕐 **Garde chaque version** | Chaque modification est une version numérotée avec son diff. `undo` fonctionne toujours |
-| 🔒 **Protège l'original** | Les modifications se font sur une copie de travail. `save` écrit un nouveau fichier et n'écrase jamais la source |
+| 🧵 **Écrit le patch** | Lit l'export XML du fichier et construit un patch avec les bons UUID, identifiants et catalogues, pour que votre agent n'ait pas à le faire |
+| 🔍 **Vérifie le résultat** | Réexporte le fichier après chaque modification et le compare à la version précédente. Si FileMaker a ignoré quelque chose, la modification est refusée au lieu d'être perdue en silence |
+| 🧭 **Prévient avant de casser** | Avant une suppression, liste les scripts, modèles et calculs qui utilisent l'objet, et attend votre feu vert |
+| 🕐 **Garde chaque version** | Chaque modification est une version numérotée avec son diff. Vous changez d'avis ? `undo` fonctionne toujours |
+| 🔒 **Protège l'original** | Tout se passe sur une copie de travail. `save` écrit un nouveau fichier et n'écrase jamais le vôtre |
 
 Plus de détails dans [comment ça marche](https://github.com/Abdeltoto/patchwork/blob/main/docs/how-it-works.md).
 
 ## Brancher votre agent
 
-Lancez `patchwork init .` dans le dossier de votre projet, nouveau ou existant. La commande ajoute les règles, les skills et la configuration MCP de chaque agent, et conserve les fichiers déjà présents.
+Une seule commande prépare tout. Lancez `patchwork init .` dans le dossier de votre projet, nouveau ou existant : elle ajoute les règles, les skills et la configuration MCP de chaque agent, et conserve les fichiers déjà présents.
 
 | Agent | Configuration écrite par `init` | Ensuite |
 |---|---|---|
@@ -83,11 +94,11 @@ Lancez `patchwork init .` dans le dossier de votre projet, nouveau ou existant. 
 | ⌨️ **Codex** | `.codex/config.toml` · `AGENTS.md` · `.agents/skills/` | Faites confiance au projet quand Codex le demande |
 | <img src="https://cdn.simpleicons.org/google/4285F4" width="16"> **Antigravity** | `.agents/mcp_config.json` · `AGENTS.md` · `.agents/skills/` | Ouvrez le dossier comme espace de travail |
 
-Chaque agent reçoit les mêmes 21 outils via `patchwork mcp`, un serveur MCP stdio. Définissez le mot de passe une fois dans votre terminal avec `PATCHWORK_PASSWORD` : les agents ne le voient jamais. Configuration manuelle et liste des outils : [agents IA](https://github.com/Abdeltoto/patchwork/blob/main/docs/ai-agents.md).
+Chaque agent reçoit les mêmes 21 outils via `patchwork mcp`, un serveur MCP stdio. Le mot de passe de votre fichier reste à vous : définissez-le une fois dans votre terminal avec `PATCHWORK_PASSWORD`, et les agents ne le voient jamais. Configuration manuelle et liste des outils : [agents IA](https://github.com/Abdeltoto/patchwork/blob/main/docs/ai-agents.md).
 
 ## Ce qu'il peut modifier
 
-Chaque opération ci-dessous a été appliquée à de vrais fichiers et confirmée par un nouvel export.
+Des rubriques, des scripts en texte brut, des listes de valeurs, les couleurs et les polices, et même une refonte graphique complète. Chaque opération ci-dessous a été essayée sur de vrais fichiers et confirmée par un nouvel export.
 
 | | Ajouter | Modifier | Supprimer |
 |---|:-:|:-:|:-:|
@@ -107,7 +118,7 @@ Ce que FMUpgradeTool ne sait pas faire (les données des enregistrements, un th�
 
 ## Sans agent
 
-Tout ce que fait l'agent est une commande ordinaire :
+Vous préférez le terminal ? Tout ce que fait l'agent est une commande ordinaire, que vous pouvez lancer vous-même :
 
 ```bash
 patchwork open "Invoice.fmp12" --account Admin     # copie de travail, version v000
@@ -153,7 +164,7 @@ Chaque commande de modification accepte `-m "note"` pour le journal et `--dry-ru
 
 ## Le guide de terrain FMUpgradeTool
 
-Le [guide de terrain](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md) rassemble tout ce que FMUpgradeTool ignore en silence, trouvé en testant sur de vrais fichiers. Un aperçu :
+Le [guide de terrain](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md) rassemble tous les pièges que FMUpgradeTool tend sans prévenir, découverts à la dure sur de vrais fichiers. Utile même si vous n'utilisez jamais Patchwork. Un aperçu :
 
 - sans `--generateGUIDs`, les patchs de thème et de rubrique sont ignorés ;
 - l'UUID d'un modèle n'est **pas** le premier `<UUID>` qu'il contient ;
@@ -196,7 +207,7 @@ Oui. Il est lu dans la variable d'environnement <code>PATCHWORK_PASSWORD</code>,
 
 ## Contribuer
 
-Découvertes sur FMUpgradeTool, nouvelles opérations, recettes et code sont les bienvenus. Commencez par [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md). Si Patchwork vous fait gagner un après-midi, une ⭐ aide d'autres développeurs FileMaker à le trouver.
+Un nouveau piège FMUpgradeTool, une recette, une opération qui vous manque ? Tout est bienvenu : commencez par [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md). Et si Patchwork vous rend votre vendredi après-midi, une ⭐ aide d'autres développeurs FileMaker à le trouver.
 
 <a href="https://star-history.com/#Abdeltoto/patchwork&Date">
   <img src="https://api.star-history.com/svg?repos=Abdeltoto/patchwork&type=Date" alt="Historique des étoiles" width="600">

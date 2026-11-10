@@ -25,11 +25,18 @@
 
 <br>
 
-> **Patchwork turns your AI coding agent into a FileMaker developer.** Ask in plain words. The agent adds fields, writes scripts, creates value lists and restyles layouts in a real `.fmp12` file. Every change is verified, versioned and reversible, and your original file is never touched.
+> **Friday, 4 PM. A client asks for "just one more field" on the detail layout.**
+> You know the drill: define the field, copy the label, nudge every object below it, stretch the part… then do it all again on the next layout.
+>
+> **Patchwork lets your AI agent do those clicks for you.** Just ask, in your own words, the way you would ask a colleague. Your agent adds the field and places it right where you said, writes scripts, creates value lists and restyles layouts, in a real `.fmp12` file. Every change is checked, every change can be undone, and your original file is never touched.
+
+Free and open source. Works with Claude Code, Cursor, Codex and Antigravity.
 
 <p align="center"><a href="https://youtu.be/AkFhBpB0YYY"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/video-card.jpg" alt="Watch the 90-second Patchwork intro on YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/AkFhBpB0YYY">Watch the 90-second intro on YouTube</a> · <a href="https://youtu.be/g5UkJLiYAhA">Version française</a></sub></p>
 
 ## Quick start
+
+Three commands, then you just talk to your agent.
 
 ```bash
 pip install fm-patchwork
@@ -39,13 +46,17 @@ patchwork init .          # wires this folder for Claude Code, Cursor, Codex and
 
 No install with [uv](https://docs.astral.sh/uv/): `uvx fm-patchwork doctor`, and `uvx fm-patchwork mcp` as the MCP server command.
 
-Then ask your agent: *"Open Invoice.fmp12 and add a Status field to Clients."*
+Then ask your agent: *"Open Invoice.fmp12 and add a Status field to Clients."* That's it.
 
-<sub>Patchwork has no dependencies. It drives FMUpgradeTool and FMDeveloperTool, which come with FileMaker Server. The free trial installer works and no server needs to run: [install the Claris tools](https://github.com/Abdeltoto/patchwork/blob/main/docs/install-fmupgradetool.md).</sub>
+### Good to know
+
+- **It changes structure, not records.** Fields, scripts, layouts, value lists, themes. For your data, use the Data API or OData.
+- **It works on closed files, not hosted ones.** Edit a copy, test it, then deploy it as you usually do.
+- **It needs the Claris command-line tools** (FMUpgradeTool and FMDeveloperTool). They come with the FileMaker Server installer, the free trial works, and no server has to run: [install the Claris tools](https://github.com/Abdeltoto/patchwork/blob/main/docs/install-fmupgradetool.md). Patchwork itself has no other dependency.
 
 ## See it in action
 
-Four real sessions on the free [Claris Invoice solution](https://marketplace.claris.com/detail/2000.html). The prompt, the tools the agent called, and what the file looked like before and after.
+Four real sessions on the free [Claris Invoice solution](https://marketplace.claris.com/detail/2000.html). For each one: what was asked, what the agent did, and the file before and after. No mockups.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-schema.png" alt="Prompt: add a Loyalty Tier field and a value list. The field and the value list appear in the file." width="100%"></p>
 
@@ -59,23 +70,23 @@ Four real sessions on the free [Claris Invoice solution](https://marketplace.cla
 
 <p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/how-it-works.jpg" alt="An AI agent stitches patches onto a FileMaker file, with a verified check and an undo arrow" width="80%"></p>
 
-FileMaker schema lives in a binary file, behind dialogs an agent cannot click. Claris ships a command-line way in, [FMUpgradeTool](https://help.claris.com/en/app-upgrade-tool-guide/content/index.html), but it addresses every object by UUID and **silently skips** a patch that is slightly wrong, while still printing `Patch File Applied`.
+Why can't your agent just do this on its own? A FileMaker file is a binary file, and its structure hides behind dialogs an agent cannot click. Claris does ship a command-line way in, [FMUpgradeTool](https://help.claris.com/en/app-upgrade-tool-guide/content/index.html), but it is picky: every object is addressed by a UUID, and a patch that is slightly wrong is **silently skipped**, while the tool still prints `Patch File Applied`.
 
-Patchwork does the hard part for the agent:
+Patchwork is the careful assistant in between:
 
 | | |
 |:-:|---|
-| 🧵 **Writes the patch** | Reads the file's XML export and builds a patch with the right UUIDs, ids and catalog structure |
-| 🔍 **Checks the result** | Re-exports the file after every change and compares it with the previous version. A skipped patch is refused |
-| 🧭 **Warns before breaking** | Before a delete, lists the scripts, layouts and calculations that use the object, and stops until you confirm |
-| 🕐 **Keeps every version** | Each change is a numbered version with its diff. `undo` always works |
-| 🔒 **Protects the original** | Edits happen on a working copy. `save` writes a new file and never overwrites the source |
+| 🧵 **Writes the patch** | Reads the file's XML export and builds a patch with the right UUIDs, ids and catalog structure, so your agent doesn't have to |
+| 🔍 **Checks the result** | Re-exports the file after every change and compares it with the previous version. If FileMaker skipped something, the change is refused, not silently lost |
+| 🧭 **Warns before breaking** | Before a delete, it lists the scripts, layouts and calculations that use the object, and waits for your OK |
+| 🕐 **Keeps every version** | Each change is a numbered version with its diff. Changed your mind? `undo` always works |
+| 🔒 **Protects the original** | Everything happens on a working copy. `save` writes a new file and never overwrites yours |
 
 More in [how it works](https://github.com/Abdeltoto/patchwork/blob/main/docs/how-it-works.md).
 
 ## Connect your agent
 
-Run `patchwork init .` in your project folder, new or existing. It adds the rules, the skills and the MCP configuration for every agent, and keeps the files you already have.
+One command sets everything up. Run `patchwork init .` in your project folder, new or existing: it adds the rules, the skills and the MCP configuration for every agent, and keeps the files you already have.
 
 | Agent | Configuration written by `init` | Then |
 |---|---|---|
@@ -84,11 +95,11 @@ Run `patchwork init .` in your project folder, new or existing. It adds the rule
 | ⌨️ **Codex** | `.codex/config.toml` · `AGENTS.md` · `.agents/skills/` | Trust the project when Codex asks |
 | <img src="https://cdn.simpleicons.org/google/4285F4" width="16"> **Antigravity** | `.agents/mcp_config.json` · `AGENTS.md` · `.agents/skills/` | Open the folder as a workspace |
 
-Every agent gets the same 21 tools through `patchwork mcp`, a stdio MCP server. Set the password once in your shell with `PATCHWORK_PASSWORD`: agents never see it. Manual setup and the full tool list: [AI agents](https://github.com/Abdeltoto/patchwork/blob/main/docs/ai-agents.md).
+Every agent gets the same 21 tools through `patchwork mcp`, a stdio MCP server. Your file's password stays yours: set it once in your shell with `PATCHWORK_PASSWORD`, and agents never see it. Manual setup and the full tool list: [AI agents](https://github.com/Abdeltoto/patchwork/blob/main/docs/ai-agents.md).
 
 ## What it can change
 
-Every operation below was applied to real files and confirmed by re-exporting them.
+Fields, plain-text scripts, value lists, colors and fonts, even a full rebrand. Every operation below was tried on real files and confirmed by re-exporting them.
 
 | | Add | Edit | Delete |
 |---|:-:|:-:|:-:|
@@ -108,7 +119,7 @@ What FMUpgradeTool cannot do (record data, a brand-new theme, a single layout ob
 
 ## Use it without an agent
 
-Everything the agent does is a plain command:
+Prefer the terminal? Everything the agent does is a plain command you can run yourself:
 
 ```bash
 patchwork open "Invoice.fmp12" --account Admin     # working copy, version v000
@@ -154,7 +165,7 @@ Every editing command takes `-m "note"` for the log and `--dry-run` to write the
 
 ## The FMUpgradeTool field guide
 
-The [field guide](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md) collects everything FMUpgradeTool silently skips, found by testing on real files. A taste:
+The [field guide](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md) collects every trap FMUpgradeTool sets without telling you, found the hard way on real files. Useful even if you never use Patchwork. A taste:
 
 - without `--generateGUIDs`, theme and field patches are skipped;
 - a layout's UUID is **not** the first `<UUID>` inside it;
@@ -197,7 +208,7 @@ Yes. It is read from the <code>PATCHWORK_PASSWORD</code> environment variable, p
 
 ## Contributing
 
-FMUpgradeTool findings, new operations, recipes and code are all welcome. Start with [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md). If Patchwork saves you an afternoon, a ⭐ helps other FileMaker developers find it.
+Found a new FMUpgradeTool trap, wrote a recipe, or want a new operation? Everything is welcome: start with [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md). And if Patchwork gives you your Friday afternoon back, a ⭐ helps other FileMaker developers find it.
 
 <a href="https://star-history.com/#Abdeltoto/patchwork&Date">
   <img src="https://api.star-history.com/svg?repos=Abdeltoto/patchwork&type=Date" alt="Star history" width="600">
