@@ -30,6 +30,7 @@ image = ["Pillow>=9"]
 
 [project.scripts]
 patchwork = "patchwork.cli:main"
+fm-patchwork = "patchwork.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Abdeltoto/patchwork"

@@ -27,13 +27,17 @@
 
 > **Patchwork turns your AI coding agent into a FileMaker developer.** Ask in plain words. The agent adds fields, writes scripts, creates value lists and restyles layouts in a real `.fmp12` file. Every change is verified, versioned and reversible, and your original file is never touched.
 
+<p align="center"><a href="https://youtu.be/AkFhBpB0YYY"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/video-card.jpg" alt="Watch the 90-second Patchwork intro on YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/AkFhBpB0YYY">Watch the 90-second intro on YouTube</a> · <a href="https://youtu.be/g5UkJLiYAhA">Version française</a></sub></p>
+
 ## Quick start
 
 ```bash
-pip install git+https://github.com/Abdeltoto/patchwork
+pip install fm-patchwork
 patchwork doctor          # finds the Claris command-line tools
 patchwork init .          # wires this folder for Claude Code, Cursor, Codex and Antigravity
 ```
+
+No install with [uv](https://docs.astral.sh/uv/): `uvx fm-patchwork doctor`, and `uvx fm-patchwork mcp` as the MCP server command.
 
 Then ask your agent: *"Open Invoice.fmp12 and add a Status field to Clients."*
 

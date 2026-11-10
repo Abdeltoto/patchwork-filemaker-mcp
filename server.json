@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Abdeltoto/patchwork",
+  "title": "Patchwork",
+  "description": "Let your AI agent edit FileMaker: fields, scripts, value lists, layouts and themes, all reversible.",
+  "websiteUrl": "https://github.com/Abdeltoto/patchwork",
+  "repository": {
+    "url": "https://github.com/Abdeltoto/patchwork",
+    "source": "github",
+    "id": "1452103984"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "fm-patchwork",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PATCHWORK_PASSWORD",
+          "description": "Password of the FileMaker account used to open the file. Leave empty for files with no password.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
