@@ -21,6 +21,10 @@
 
 **[Quick start](#quick-start)** · **[Examples](#see-it-in-action)** · **[Connect your agent](#connect-your-agent)** · **[What it can change](#what-it-can-change)** · **[Field guide](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md)** · **[Français](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/README.fr.md)**
 
+<br>
+
+<img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/demo.gif" alt="Real session on Claris Invoice: one sentence asks for a Loyalty Tier field under Contact Email. The agent calls patchwork_add_field and patchwork_place_field, the field appears on the layout, and the change is verified by re-export." width="100%">
+
 </div>
 
 <br>
