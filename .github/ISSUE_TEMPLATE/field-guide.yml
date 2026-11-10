@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks! Findings verified on a real file go into the [field guide](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md).
+        Thanks! Findings verified on a real file go into the [field guide](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md).
         Please never paste customer data. A Claris starter solution is perfect to reproduce.
   - type: input
     id: version

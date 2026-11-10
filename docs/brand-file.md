@@ -4,7 +4,7 @@
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/Abdeltoto/patchwork/main/brand.schema.json",
+  "$schema": "https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/brand.schema.json",
   "name": "Maple & Oak",
   "colors": {
     "0091CE": "2F5D50",
@@ -32,7 +32,7 @@
 | `logo.image` | with `logo` | PNG, relative to the brand file. Use a transparent PNG. |
 | `logo.replace` | with `logo` | The container currently shown as the logo, as `Table::Field`. Every layout object that shows it will show the new logo. |
 | `logo.field` | no | Name of the new global field holding the logo. Default `Brand Logo`. |
-| `logo.width` | no | Resize the PNG to this width first (needs `pip install "fm-patchwork[image]"`). |
+| `logo.width` | no | Resize the PNG to this width first (needs `pip install "filemaker-patchwork[image]"`). |
 
 ## Finding the colors to replace
 

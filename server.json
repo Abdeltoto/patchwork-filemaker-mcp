@@ -3,9 +3,9 @@
   "name": "io.github.Abdeltoto/patchwork",
   "title": "Patchwork",
   "description": "Let your AI agent edit FileMaker: fields, scripts, value lists, layouts and themes, all reversible.",
-  "websiteUrl": "https://github.com/Abdeltoto/patchwork",
+  "websiteUrl": "https://github.com/Abdeltoto/patchwork-filemaker-mcp",
   "repository": {
-    "url": "https://github.com/Abdeltoto/patchwork",
+    "url": "https://github.com/Abdeltoto/patchwork-filemaker-mcp",
     "source": "github",
     "id": "1452103984"
   },
@@ -13,7 +13,7 @@
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "fm-patchwork",
+      "identifier": "filemaker-patchwork",
       "version": "0.1.0",
       "runtimeHint": "uvx",
       "transport": {

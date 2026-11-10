@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/Abdeltoto/patchwork/main/brand.schema.json",
+  "$id": "https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/brand.schema.json",
   "title": "Patchwork brand file",
   "description": "Input of `patchwork rebrand`: the brand applied to a FileMaker solution.",
   "type": "object",

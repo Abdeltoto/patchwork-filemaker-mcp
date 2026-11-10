@@ -4,7 +4,7 @@ What the [official guide](https://help.claris.com/en/app-upgrade-tool-guide/cont
 
 The single most important fact: **FMUpgradeTool prints `Patch File Applied` and exits 0 even when it skipped your change.** `--validatePatch` checks syntax only. The only proof is a re-export of the result. Patchwork does that check after every change (see [section 10](#10-detecting-a-skipped-patch)).
 
-Found something else? [Share it](https://github.com/Abdeltoto/patchwork/issues/new?template=field-guide.yml).
+Found something else? [Share it](https://github.com/Abdeltoto/patchwork-filemaker-mcp/issues/new?template=field-guide.yml).
 
 ## 1. Run `--generateGUIDs` first
 

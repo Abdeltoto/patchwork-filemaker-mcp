@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/fm-patchwork
+      url: https://pypi.org/p/filemaker-patchwork
     permissions:
       id-token: write
     steps:

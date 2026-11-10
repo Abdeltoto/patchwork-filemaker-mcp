@@ -1,6 +1,6 @@
 # {{NAME}}
 
-This is a FileMaker project. You edit the FileMaker file with [Patchwork](https://github.com/Abdeltoto/patchwork), through its MCP tools (`patchwork_*`) or the `patchwork` command. Never drive the FileMaker window to change schema.
+This is a FileMaker project. You edit the FileMaker file with [Patchwork](https://github.com/Abdeltoto/patchwork-filemaker-mcp), through its MCP tools (`patchwork_*`) or the `patchwork` command. Never drive the FileMaker window to change schema.
 
 ## How to work
 

@@ -9,6 +9,6 @@
 
 ## Reporting a vulnerability
 
-Please do not open a public issue. Use [GitHub private vulnerability reporting](https://github.com/Abdeltoto/patchwork/security/advisories/new). You will get an answer within a week.
+Please do not open a public issue. Use [GitHub private vulnerability reporting](https://github.com/Abdeltoto/patchwork-filemaker-mcp/security/advisories/new). You will get an answer within a week.
 
 Never attach a customer `.fmp12` file or export to a report. A minimal file made from a Claris starter solution is enough.

@@ -175,7 +175,7 @@ def image_calc(png: Path, width: int | None = None) -> str:
         try:
             from PIL import Image
         except ImportError as exc:
-            raise PatchworkError("Resizing an image needs Pillow: pip install \"fm-patchwork[image]\"") from exc
+            raise PatchworkError("Resizing an image needs Pillow: pip install \"filemaker-patchwork[image]\"") from exc
         img = Image.open(png).convert("RGBA")
         img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
         buf = io.BytesIO()

@@ -4,14 +4,14 @@ Thanks for helping. FileMaker developers know things about FMUpgradeTool that no
 
 ## Three easy ways to help
 
-1. **Share a finding.** You noticed FMUpgradeTool skips a patch, or needs an attribute the docs don't mention? Open a [field guide finding](https://github.com/Abdeltoto/patchwork/issues/new?template=field-guide.yml). Say which FileMaker version, what you tried, what happened.
+1. **Share a finding.** You noticed FMUpgradeTool skips a patch, or needs an attribute the docs don't mention? Open a [field guide finding](https://github.com/Abdeltoto/patchwork-filemaker-mcp/issues/new?template=field-guide.yml). Say which FileMaker version, what you tried, what happened.
 2. **Share a brand or a recipe.** A `brand.json` for another Claris starter theme, or a step-by-step patch recipe, goes in `examples/`.
 3. **Fix or build.** Pick an issue labeled `good first issue`.
 
 ## Development
 
 ```bash
-git clone https://github.com/Abdeltoto/patchwork
+git clone https://github.com/Abdeltoto/patchwork-filemaker-mcp
 cd patchwork
 python -m venv .venv && . .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[image]"

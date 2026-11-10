@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fm-patchwork"
+name = "filemaker-patchwork"
 dynamic = ["version"]
 description = "Let your AI agent edit FileMaker: fields, scripts, value lists, layouts and themes, checked and reversible. MCP server for Claude Code, Cursor, Codex and Antigravity."
 readme = "README.md"
@@ -30,12 +30,12 @@ image = ["Pillow>=9"]
 
 [project.scripts]
 patchwork = "patchwork.cli:main"
-fm-patchwork = "patchwork.cli:main"
+filemaker-patchwork = "patchwork.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Abdeltoto/patchwork"
-Issues = "https://github.com/Abdeltoto/patchwork/issues"
-Changelog = "https://github.com/Abdeltoto/patchwork/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Abdeltoto/patchwork-filemaker-mcp"
+Issues = "https://github.com/Abdeltoto/patchwork-filemaker-mcp/issues"
+Changelog = "https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/CHANGELOG.md"
 
 [tool.setuptools.dynamic]
 version = { attr = "patchwork.__version__" }

@@ -26,7 +26,7 @@ EPILOG = f"""typical session:
   patchwork save "Invoice v2.fmp12"
 
 AI agents: `patchwork mcp` is an MCP server for Claude, Cursor, Codex and Antigravity. See docs/ai-agents.md.
-The password is read from {PASSWORD_ENV}. Docs: https://github.com/Abdeltoto/patchwork"""
+The password is read from {PASSWORD_ENV}. Docs: https://github.com/Abdeltoto/patchwork-filemaker-mcp"""
 
 KINDS_SHOW = ["layout", "script", "value-list", "custom-function", "theme", "field", "step"]
 

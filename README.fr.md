@@ -1,24 +1,24 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/banner.png" alt="Patchwork : laissez votre agent IA modifier FileMaker" width="100%">
+<img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/banner.png" alt="Patchwork : laissez votre agent IA modifier FileMaker" width="100%">
 
 <br>
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Abdeltoto/patchwork/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Abdeltoto/patchwork/actions/workflows/ci.yml)
-[![Stars](https://img.shields.io/github/stars/Abdeltoto/patchwork?style=flat-square&color=8b5cf6)](https://github.com/Abdeltoto/patchwork/stargazers)
-[![Licence MIT](https://img.shields.io/badge/licence-MIT-14b8a6?style=flat-square)](https://github.com/Abdeltoto/patchwork/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/Abdeltoto/patchwork-filemaker-mcp/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Abdeltoto/patchwork-filemaker-mcp/actions/workflows/ci.yml)
+[![Stars](https://img.shields.io/github/stars/Abdeltoto/patchwork-filemaker-mcp?style=flat-square&color=8b5cf6)](https://github.com/Abdeltoto/patchwork-filemaker-mcp/stargazers)
+[![Licence MIT](https://img.shields.io/badge/licence-MIT-14b8a6?style=flat-square)](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FileMaker 2026](https://img.shields.io/badge/FileMaker-2026-000000?style=flat-square&logo=claris&logoColor=white)
 ![Serveur MCP](https://img.shields.io/badge/MCP-serveur-000000?style=flat-square&logo=modelcontextprotocol&logoColor=white)
 ![Zéro dépendance](https://img.shields.io/badge/d%C3%A9pendances-0-f59e0b?style=flat-square)
-[![PRs bienvenues](https://img.shields.io/badge/PRs-bienvenues-ff69b4?style=flat-square)](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md)
+[![PRs bienvenues](https://img.shields.io/badge/PRs-bienvenues-ff69b4?style=flat-square)](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/CONTRIBUTING.md)
 
 <a href="#brancher-votre-agent"><img src="https://img.shields.io/badge/Claude_Code-191919?style=for-the-badge&logo=claude&logoColor=D97757" alt="Claude Code"></a>
 <a href="#brancher-votre-agent"><img src="https://img.shields.io/badge/Cursor-000000?style=for-the-badge&logo=cursor&logoColor=white" alt="Cursor"></a>
 <a href="#brancher-votre-agent"><img src="https://img.shields.io/badge/Codex-000000?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3QgeD0iMS41IiB5PSIzIiB3aWR0aD0iMjEiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik02LjUgOWwzLjUgMy0zLjUgMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMi41IDE1LjVoNSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==" alt="Codex"></a>
 <a href="#brancher-votre-agent"><img src="https://img.shields.io/badge/Antigravity-1a1a2e?style=for-the-badge&logo=google&logoColor=4285F4" alt="Google Antigravity"></a>
 
-**[Démarrage](#démarrage)** · **[Exemples](#en-action)** · **[Brancher votre agent](#brancher-votre-agent)** · **[Ce qu'il peut modifier](#ce-quil-peut-modifier)** · **[Guide de terrain](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md)** · **[English](https://github.com/Abdeltoto/patchwork/blob/main/README.md)**
+**[Démarrage](#démarrage)** · **[Exemples](#en-action)** · **[Brancher votre agent](#brancher-votre-agent)** · **[Ce qu'il peut modifier](#ce-quil-peut-modifier)** · **[Guide de terrain](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md)** · **[English](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/README.md)**
 
 </div>
 
@@ -31,19 +31,19 @@
 
 Gratuit et open source. Fonctionne avec Claude Code, Cursor, Codex et Antigravity.
 
-<p align="center"><a href="https://youtu.be/g5UkJLiYAhA"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/video-card.fr.jpg" alt="Regarder la présentation de Patchwork en 90 secondes sur YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/g5UkJLiYAhA">Regarder la présentation en 90 secondes sur YouTube</a> · <a href="https://youtu.be/AkFhBpB0YYY">English version</a></sub></p>
+<p align="center"><a href="https://youtu.be/g5UkJLiYAhA"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/video-card.fr.jpg" alt="Regarder la présentation de Patchwork en 90 secondes sur YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/g5UkJLiYAhA">Regarder la présentation en 90 secondes sur YouTube</a> · <a href="https://youtu.be/AkFhBpB0YYY">English version</a></sub></p>
 
 ## Démarrage
 
 Trois commandes, et ensuite vous parlez simplement à votre agent.
 
 ```bash
-pip install fm-patchwork
+pip install filemaker-patchwork
 patchwork doctor          # trouve les outils en ligne de commande Claris
 patchwork init .          # branche ce dossier pour Claude Code, Cursor, Codex et Antigravity
 ```
 
-Sans installation, avec [uv](https://docs.astral.sh/uv/) : `uvx fm-patchwork doctor`, et `uvx fm-patchwork mcp` comme commande du serveur MCP.
+Sans installation, avec [uv](https://docs.astral.sh/uv/) : `uvx filemaker-patchwork doctor`, et `uvx filemaker-patchwork mcp` comme commande du serveur MCP.
 
 Puis demandez à votre agent : *« Ouvre Invoice.fmp12 et ajoute une rubrique Status dans Clients. »* C'est tout.
 
@@ -51,23 +51,23 @@ Puis demandez à votre agent : *« Ouvre Invoice.fmp12 et ajoute une rubrique St
 
 - **Il modifie la structure, pas les enregistrements.** Rubriques, scripts, modèles, listes de valeurs, thèmes. Pour vos données, utilisez la Data API ou OData.
 - **Il travaille sur des fichiers fermés, pas sur des fichiers hébergés.** Modifiez une copie, testez-la, puis déployez-la comme d'habitude.
-- **Il a besoin des outils en ligne de commande Claris** (FMUpgradeTool et FMDeveloperTool). Ils sont fournis avec l'installeur de FileMaker Server, la version d'essai gratuite suffit et aucun serveur n'a besoin de tourner : [installer les outils Claris](https://github.com/Abdeltoto/patchwork/blob/main/docs/install-fmupgradetool.md). Patchwork lui-même n'a aucune autre dépendance.
+- **Il a besoin des outils en ligne de commande Claris** (FMUpgradeTool et FMDeveloperTool). Ils sont fournis avec l'installeur de FileMaker Server, la version d'essai gratuite suffit et aucun serveur n'a besoin de tourner : [installer les outils Claris](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/install-fmupgradetool.md). Patchwork lui-même n'a aucune autre dépendance.
 
 ## En action
 
 Quatre vraies sessions sur la solution gratuite [Claris Invoice](https://marketplace.claris.com/detail/2000.html). Pour chacune : la demande, ce que l'agent a fait, et le fichier avant et après. Aucune maquette.
 
-<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-schema.png" alt="Prompt : ajouter une rubrique Loyalty Tier et une liste de valeurs. La rubrique et la liste apparaissent dans le fichier." width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/example-schema.png" alt="Prompt : ajouter une rubrique Loyalty Tier et une liste de valeurs. La rubrique et la liste apparaissent dans le fichier." width="100%"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-script.png" alt="Prompt : écrire un script Say Hello. L'agent copie un vrai pas de dialogue et crée un script de deux pas." width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/example-script.png" alt="Prompt : écrire un script Say Hello. L'agent copie un vrai pas de dialogue et crée un script de deux pas." width="100%"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-cleanup.png" alt="Prompt : supprimer les modèles Dev. Six modèles sont supprimés et l'agent signale trois scripts qui les utilisaient." width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/example-cleanup.png" alt="Prompt : supprimer les modèles Dev. Six modèles sont supprimés et l'agent signale trois scripts qui les utilisaient." width="100%"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/example-rebrand.png" alt="Prompt : rebrander pour Maple and Oak. L'en-tête bleu Claris devient un en-tête vert forêt Maple and Oak." width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/example-rebrand.png" alt="Prompt : rebrander pour Maple and Oak. L'en-tête bleu Claris devient un en-tête vert forêt Maple and Oak." width="100%"></p>
 
 ## Comment ça marche
 
-<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork/main/docs/images/how-it-works.jpg" alt="Un agent IA coud des pièces sur un fichier FileMaker, avec une coche de vérification et une flèche d'annulation" width="80%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/how-it-works.jpg" alt="Un agent IA coud des pièces sur un fichier FileMaker, avec une coche de vérification et une flèche d'annulation" width="80%"></p>
 
 Pourquoi votre agent ne peut-il pas le faire seul ? Un fichier FileMaker est un fichier binaire, et sa structure se cache derrière des fenêtres qu'un agent ne peut pas cliquer. Claris fournit bien une porte d'entrée en ligne de commande, [FMUpgradeTool](https://help.claris.com/en/app-upgrade-tool-guide/content/index.html), mais elle est exigeante : chaque objet est désigné par un UUID, et un patch légèrement faux est **ignoré en silence**, alors que l'outil affiche quand même `Patch File Applied`.
 
@@ -81,7 +81,7 @@ Patchwork est l'assistant minutieux entre les deux :
 | 🕐 **Garde chaque version** | Chaque modification est une version numérotée avec son diff. Vous changez d'avis ? `undo` fonctionne toujours |
 | 🔒 **Protège l'original** | Tout se passe sur une copie de travail. `save` écrit un nouveau fichier et n'écrase jamais le vôtre |
 
-Plus de détails dans [comment ça marche](https://github.com/Abdeltoto/patchwork/blob/main/docs/how-it-works.md).
+Plus de détails dans [comment ça marche](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/how-it-works.md).
 
 ## Brancher votre agent
 
@@ -94,7 +94,7 @@ Une seule commande prépare tout. Lancez `patchwork init .` dans le dossier de v
 | ⌨️ **Codex** | `.codex/config.toml` · `AGENTS.md` · `.agents/skills/` | Faites confiance au projet quand Codex le demande |
 | <img src="https://cdn.simpleicons.org/google/4285F4" width="16"> **Antigravity** | `.agents/mcp_config.json` · `AGENTS.md` · `.agents/skills/` | Ouvrez le dossier comme espace de travail |
 
-Chaque agent reçoit les mêmes 21 outils via `patchwork mcp`, un serveur MCP stdio. Le mot de passe de votre fichier reste à vous : définissez-le une fois dans votre terminal avec `PATCHWORK_PASSWORD`, et les agents ne le voient jamais. Configuration manuelle et liste des outils : [agents IA](https://github.com/Abdeltoto/patchwork/blob/main/docs/ai-agents.md).
+Chaque agent reçoit les mêmes 21 outils via `patchwork mcp`, un serveur MCP stdio. Le mot de passe de votre fichier reste à vous : définissez-le une fois dans votre terminal avec `PATCHWORK_PASSWORD`, et les agents ne le voient jamais. Configuration manuelle et liste des outils : [agents IA](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/ai-agents.md).
 
 ## Ce qu'il peut modifier
 
@@ -114,7 +114,7 @@ Des rubriques, des scripts en texte brut, des listes de valeurs, les couleurs et
 > Les scripts se lisent et s'écrivent comme dans l'espace de travail des scripts, un pas par ligne :
 > `Set Field [ Clients::Status ; "Gold" ]`. Modifiez le texte de `patchwork show script NOM` et renvoyez-le avec `set-steps` : les lignes inchangées gardent leur pas exact, et chaque pas est relu après la modification, donc un paramètre perdu est détecté.
 
-Ce que FMUpgradeTool ne sait pas faire (les données des enregistrements, un thème entièrement nouveau, un objet de modèle seul) est listé dans [le guide de terrain](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md).
+Ce que FMUpgradeTool ne sait pas faire (les données des enregistrements, un thème entièrement nouveau, un objet de modèle seul) est listé dans [le guide de terrain](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md).
 
 ## Sans agent
 
@@ -158,20 +158,20 @@ patchwork save "Invoice v2.fmp12"
 | `init DOSSIER` | Branche un dossier pour Claude Code, Cursor, Codex et Antigravity |
 | `doctor` | Montre quels outils Claris Patchwork a trouvés |
 
-Chaque commande de modification accepte `-m "note"` pour le journal et `--dry-run` pour écrire le patch sans l'appliquer. Plus d'exemples dans [exemples et recettes](https://github.com/Abdeltoto/patchwork/tree/main/examples).
+Chaque commande de modification accepte `-m "note"` pour le journal et `--dry-run` pour écrire le patch sans l'appliquer. Plus d'exemples dans [exemples et recettes](https://github.com/Abdeltoto/patchwork-filemaker-mcp/tree/main/examples).
 
 </details>
 
 ## Le guide de terrain FMUpgradeTool
 
-Le [guide de terrain](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md) rassemble tous les pièges que FMUpgradeTool tend sans prévenir, découverts à la dure sur de vrais fichiers. Utile même si vous n'utilisez jamais Patchwork. Un aperçu :
+Le [guide de terrain](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md) rassemble tous les pièges que FMUpgradeTool tend sans prévenir, découverts à la dure sur de vrais fichiers. Utile même si vous n'utilisez jamais Patchwork. Un aperçu :
 
 - sans `--generateGUIDs`, les patchs de thème et de rubrique sont ignorés ;
 - l'UUID d'un modèle n'est **pas** le premier `<UUID>` qu'il contient ;
 - remplacer un seul objet de modèle est ignoré, remplacer le modèle entier fonctionne ;
 - supprimer un pas de script demande un `ScriptReference` dans chaque `ScriptStepReference`.
 
-Vous en avez trouvé un autre ? [Ajoutez-le](https://github.com/Abdeltoto/patchwork/issues/new?template=field-guide.yml).
+Vous en avez trouvé un autre ? [Ajoutez-le](https://github.com/Abdeltoto/patchwork-filemaker-mcp/issues/new?template=field-guide.yml).
 
 ## FAQ
 
@@ -207,12 +207,12 @@ Oui. Il est lu dans la variable d'environnement <code>PATCHWORK_PASSWORD</code>,
 
 ## Contribuer
 
-Un nouveau piège FMUpgradeTool, une recette, une opération qui vous manque ? Tout est bienvenu : commencez par [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork/blob/main/CONTRIBUTING.md). Et si Patchwork vous rend votre vendredi après-midi, une ⭐ aide d'autres développeurs FileMaker à le trouver.
+Un nouveau piège FMUpgradeTool, une recette, une opération qui vous manque ? Tout est bienvenu : commencez par [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/CONTRIBUTING.md). Et si Patchwork vous rend votre vendredi après-midi, une ⭐ aide d'autres développeurs FileMaker à le trouver.
 
-<a href="https://star-history.com/#Abdeltoto/patchwork&Date">
-  <img src="https://api.star-history.com/svg?repos=Abdeltoto/patchwork&type=Date" alt="Historique des étoiles" width="600">
+<a href="https://star-history.com/#Abdeltoto/patchwork-filemaker-mcp&Date">
+  <img src="https://api.star-history.com/svg?repos=Abdeltoto/patchwork-filemaker-mcp&type=Date" alt="Historique des étoiles" width="600">
 </a>
 
 ## Licence
 
-[MIT](https://github.com/Abdeltoto/patchwork/blob/main/LICENSE). Patchwork est un projet communautaire, sans lien avec Claris International Inc. ni soutien de sa part. FileMaker et Claris sont des marques de Claris International Inc. Les autres noms de produits et logos appartiennent à leurs propriétaires.
+[MIT](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/LICENSE). Patchwork est un projet communautaire, sans lien avec Claris International Inc. ni soutien de sa part. FileMaker et Claris sont des marques de Claris International Inc. Les autres noms de produits et logos appartiennent à leurs propriétaires.

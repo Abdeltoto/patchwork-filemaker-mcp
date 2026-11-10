@@ -63,4 +63,4 @@ For anything else, `patchwork_show kind=layout name=...` gives the whole layout.
 - Error 803: the file is open in FileMaker. Ask the user to close it.
 - A password error: `PATCHWORK_PASSWORD` is missing or wrong. Ask the user to set it in their environment. Never ask for the password in the chat.
 
-Full list of verified behaviors: https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md
+Full list of verified behaviors: https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/fmupgradetool-field-guide.md

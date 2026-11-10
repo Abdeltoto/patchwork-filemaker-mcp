@@ -18,7 +18,7 @@ First public release.
 - `uses`: what references an object (layouts, scripts, fields, value lists, tables, table occurrences, themes), and possible mentions by name in calculations. `delete` is refused while an object is referenced, unless `--force`.
 - New value lists and custom functions are checked for content: Patchwork re-reads the values, the formula and the parameters, and drops the version if FileMaker lost them.
 - `patchwork mcp`: an MCP server over stdio with 21 tools.
-- Published on PyPI as `fm-patchwork`. The command is installed as both `patchwork` and `fm-patchwork`, so `uvx fm-patchwork mcp` runs the server without an install.
+- Published on PyPI as `filemaker-patchwork`. The command is installed as both `patchwork` and `filemaker-patchwork`, so `uvx filemaker-patchwork mcp` runs the server without an install.
 - End-to-end tests against the real Claris tools (`tests/test_integration.py`), run when `PATCHWORK_SAMPLE` points to the Claris Invoice solution.
 - `patchwork init`: wires a new or existing folder for Claude Code, Cursor, Codex and Google Antigravity (agent rules, skills, MCP configuration). Existing files are kept. When `patchwork` is not on PATH, the MCP configuration points at the Python that ran `init`.
 - `patchwork rebrand`: colors, fonts, logo and theme name on a whole solution from one `brand.json`.

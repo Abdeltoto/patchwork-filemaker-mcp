@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions and show-and-tell
-    url: https://github.com/Abdeltoto/patchwork/discussions
+    url: https://github.com/Abdeltoto/patchwork-filemaker-mcp/discussions
     about: Ask how to patch something, or show what you built.
