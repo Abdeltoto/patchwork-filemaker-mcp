@@ -1,0 +1,25 @@
+name: Bug report
+description: Patchwork did something wrong.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: Run with the same arguments; Patchwork already hides the password. Remove any customer names.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `patchwork doctor`
+      render: text
+    validations:
+      required: true

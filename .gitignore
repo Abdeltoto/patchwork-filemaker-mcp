@@ -1,0 +1,27 @@
+# FileMaker files and structure exports never go into Git.
+*.fmp12
+*.fmp12.bak
+raw/
+*.log
+
+# Secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+
+# Local planning notes
+Reste à faire.md
+Sprinte Roadmap.md

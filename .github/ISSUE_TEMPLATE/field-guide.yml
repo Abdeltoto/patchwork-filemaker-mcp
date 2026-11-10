@@ -1,0 +1,35 @@
+name: FMUpgradeTool field guide finding
+description: Share something FMUpgradeTool does that the docs don't say.
+labels: ["field guide"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Findings verified on a real file go into the [field guide](https://github.com/Abdeltoto/patchwork/blob/main/docs/fmupgradetool-field-guide.md).
+        Please never paste customer data. A Claris starter solution is perfect to reproduce.
+  - type: input
+    id: version
+    attributes:
+      label: FMUpgradeTool and FileMaker version
+      placeholder: FMUpgradeTool 26.0.3.309, FileMaker Pro 26.0.3
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: The patch (trimmed), the command.
+      render: xml
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened, and how you checked
+      description: For example "Patch File Applied, but the re-exported XML still has the old value".
+    validations:
+      required: true
+  - type: textarea
+    id: works
+    attributes:
+      label: What works instead (if you found it)

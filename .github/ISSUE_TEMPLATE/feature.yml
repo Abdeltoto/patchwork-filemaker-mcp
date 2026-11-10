@@ -1,0 +1,15 @@
+name: Idea
+description: Something Patchwork should be able to patch or do.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you want to change in a FileMaker file, from code?
+      placeholder: Add a value list to every solution we deploy...
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today?

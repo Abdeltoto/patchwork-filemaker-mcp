@@ -1,0 +1,29 @@
+{
+  "$schema": "../../brand.schema.json",
+  "name": "Maple & Oak",
+  "colors": {
+    "0091CE": "2F5D50",
+    "0079A6": "24493F",
+    "0074A5": "24493F",
+    "00A3E8": "E0A43A",
+    "0A1747": "1F3D35",
+    "004968": "1F3D35",
+    "282828": "2B2118",
+    "414141": "4A3B2E",
+    "F2F2F2": "F7F3EC",
+    "F9F9F9": "FBF8F2",
+    "E6E6E6": "E9E1D3"
+  },
+  "fonts": {
+    "HelveticaNeue,HelveticaNeue": "Georgia,Georgia",
+    "HelveticaNeue-Light,HelveticaNeue-Light": "Georgia,Georgia",
+    "HelveticaNeue-Medium,HelveticaNeue-Medium": "Georgia,Georgia-Bold",
+    "HelveticaNeue-Bold,HelveticaNeue-Bold": "Georgia,Georgia-Bold"
+  },
+  "logo": {
+    "image": "logo.png",
+    "width": 464,
+    "replace": "Admin::Logo Global",
+    "field": "Brand Logo"
+  }
+}

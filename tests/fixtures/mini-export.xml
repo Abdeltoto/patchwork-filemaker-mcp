@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FMSaveAsXML version="2.3.0.0">
+	<Structure>
+		<AddAction>
+			<BaseTableCatalog membercount="1">
+				<UUID>BT-CATALOG-UUID</UUID>
+				<BaseTable id="129" comment="" name="Admin">
+					<UUID>BASE-UUID</UUID>
+				</BaseTable>
+			</BaseTableCatalog>
+			<CustomFunctionsCatalog membercount="1">
+				<UUID>CF-CATALOG-UUID</UUID>
+				<TagList></TagList>
+				<ObjectList membercount="1">
+					<CustomFunction id="26" name="CardWindowHeight" access="All">
+						<UUID>CF-UUID</UUID>
+						<TagList></TagList>
+						<Calculation>
+							<Text><![CDATA[600]]></Text>
+						</Calculation>
+						<Display>CardWindowHeight</Display>
+					</CustomFunction>
+				</ObjectList>
+			</CustomFunctionsCatalog>
+			<ValueListCatalog membercount="1">
+				<UUID>VL-CATALOG-UUID</UUID>
+				<TagList></TagList>
+				<ValueList id="2" name="Industries">
+					<Source value="Custom"></Source>
+					<CustomValues>
+						<Text><![CDATA[Retail]]></Text>
+					</CustomValues>
+					<UUID>VL-UUID</UUID>
+					<TagList></TagList>
+				</ValueList>
+			</ValueListCatalog>
+			<ScriptCatalog membercount="2">
+				<UUID>SC-CATALOG-UUID</UUID>
+				<TagList></TagList>
+				<Script id="11" name="Utilities" isFolder="True">
+					<UUID>FOLDER-UUID</UUID>
+				</Script>
+				<Script id="28" name="Close Window">
+					<UUID>SCRIPT-UUID</UUID>
+					<Options hidden="True">8</Options>
+					<TagList></TagList>
+				</Script>
+			</ScriptCatalog>
+			<ThemeCatalog membercount="2">
+				<Theme Display="Apex Blue" name="com.filemaker.theme.apex_blue" id="22">
+					<UUID>THEME-UUID</UUID>
+					<CSS><![CDATA[field:normal .self { color: rgba(0%,56.8627%,80.7843%,1); font-family: -fm-font-family(HelveticaNeue,HelveticaNeue); }]]></CSS>
+				</Theme>
+				<Theme Display="Bare" name="com.filemaker.theme.bare" id="23">
+					<UUID></UUID>
+				</Theme>
+			</ThemeCatalog>
+			<FieldsForTables>
+				<FieldCatalog>
+					<UUID>CATALOG-UUID</UUID>
+					<BaseTableReference id="129" name="Admin" UUID="BASE-UUID"></BaseTableReference>
+					<ObjectList membercount="2">
+						<Field id="24" name="Logo" fieldtype="Normal" datatype="Binary">
+							<UUID>LOGO-UUID</UUID>
+						</Field>
+						<Field id="40" name="Logo New" fieldtype="Calculated" datatype="Binary">
+							<UUID>NEW-UUID</UUID>
+							<Calculation table="Admin">
+								<Text><![CDATA[If ( CardWindowHeight > 0 ; Logo ; "Logo" )]]></Text>
+							</Calculation>
+						</Field>
+					</ObjectList>
+				</FieldCatalog>
+			</FieldsForTables>
+			<LayoutCatalog>
+				<Layout id="5" name="Dashboard" width="1112">
+					<TableOccurrenceReference id="1065089" name="Admin" UUID="TO-UUID"></TableOccurrenceReference>
+					<LayoutThemeReference id="22" name="com.filemaker.theme.apex_blue" UUID="THEME-UUID"></LayoutThemeReference>
+					<PartsList>
+						<LayoutObject id="1" type="Container">
+							<UUID>OBJECT-UUID</UUID>
+							<FieldReference id="24" name="Logo" repetition="1" UUID="LOGO-UUID">
+							</FieldReference>
+							<LocalCSS><![CDATA[self { background-color: rgba(0%,56.8627%,80.7843%,1); }]]></LocalCSS>
+						</LayoutObject>
+					</PartsList>
+					<UUID>LAYOUT-UUID</UUID>
+				</Layout>
+				<Layout id="6" name="Plain &amp; Simple" width="800">
+					<LayoutThemeReference id="22" name="com.filemaker.theme.apex_blue" UUID="THEME-UUID"></LayoutThemeReference>
+					<PartsList></PartsList>
+					<UUID>PLAIN-UUID</UUID>
+				</Layout>
+			</LayoutCatalog>
+			<StepsForScripts membercount="1">
+				<Script>
+					<ScriptReference id="28" name="Close Window" UUID="SCRIPT-UUID"></ScriptReference>
+					<ObjectList membercount="1">
+						<Step hash="ABC" index="0" id="89" name="# (comment)" enable="True">
+							<UUID>STEP-UUID</UUID>
+							<OwnerID></OwnerID>
+							<Options>4</Options>
+							<ParameterValues membercount="1">
+								<Parameter type="Comment">
+									<Comment value="Closes the window"></Comment>
+								</Parameter>
+							</ParameterValues>
+						</Step>
+					</ObjectList>
+				</Script>
+			</StepsForScripts>
+		</AddAction>
+	</Structure>
+</FMSaveAsXML>

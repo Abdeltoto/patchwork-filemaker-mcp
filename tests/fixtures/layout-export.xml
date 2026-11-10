@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FMSaveAsXML version="2.3.0.0">
+	<Structure>
+		<AddAction>
+			<TableOccurrenceCatalog>
+				<TableOccurrence id="1065091" name="Clients" viewState="0">
+					<UUID>TO-UUID</UUID>
+					<BaseTableReference id="130" name="Clients" UUID="BASE-UUID"></BaseTableReference>
+				</TableOccurrence>
+			</TableOccurrenceCatalog>
+			<FieldsForTables>
+				<FieldCatalog>
+					<UUID>CATALOG-UUID</UUID>
+					<BaseTableReference id="130" name="Clients" UUID="BASE-UUID"></BaseTableReference>
+					<ObjectList membercount="3">
+						<Field id="10" name="Email" fieldtype="Normal" datatype="Text">
+							<UUID>EMAIL-UUID</UUID>
+						</Field>
+						<Field id="11" name="Notes" fieldtype="Normal" datatype="Text">
+							<UUID>NOTES-UUID</UUID>
+						</Field>
+						<Field id="12" name="Loyalty Tier" fieldtype="Normal" datatype="Text">
+							<UUID>TIER-UUID</UUID>
+						</Field>
+					</ObjectList>
+				</FieldCatalog>
+			</FieldsForTables>
+			<LayoutCatalog>
+				<Layout id="12" name="Clients Details" width="600">
+					<TableOccurrenceReference id="1065091" name="Clients" UUID="TO-UUID"></TableOccurrenceReference>
+					<PartsList>
+						<Part type="Body" kind="4">
+							<Definition type="Body" kind="4" size="300" absolute="0" Options="0"></Definition>
+							<ObjectList membercount="5">
+								<LayoutObject hash="R" id="1" type="Rectangle" name="" kind="5">
+									<UUID>RECT-UUID</UUID>
+									<Bounds top="0" left="0" bottom="300" right="600"></Bounds>
+								</LayoutObject>
+								<LayoutObject hash="L" id="2" type="Text" name="" kind="2">
+									<UUID>LABEL-UUID</UUID>
+									<Bounds top="20" left="10" bottom="40" right="200"></Bounds>
+									<Text>
+										<StyledText>
+											<Data><![CDATA[Email]]></Data>
+										</StyledText>
+									</Text>
+								</LayoutObject>
+								<LayoutObject hash="E" id="3" type="Edit Box" name="" kind="1">
+									<UUID>EDIT-UUID</UUID>
+									<Bounds top="40" left="10" bottom="70" right="200"></Bounds>
+									<TabOrder membercount="1">
+										<Location id="0">1</Location>
+									</TabOrder>
+									<Field>
+										<FieldReference id="10" name="Email" repetition="1" UUID="EMAIL-UUID">
+											<TableOccurrenceReference id="1065091" name="Clients" UUID="TO-UUID"></TableOccurrenceReference>
+										</FieldReference>
+									</Field>
+									<Accessibility>
+										<Label>2</Label>
+									</Accessibility>
+								</LayoutObject>
+								<LayoutObject hash="N" id="4" type="Edit Box" name="" kind="1">
+									<UUID>NOTES-OBJECT-UUID</UUID>
+									<Bounds top="70" left="10" bottom="100" right="200"></Bounds>
+									<Field>
+										<FieldReference id="11" name="Notes" repetition="1" UUID="NOTES-UUID">
+											<TableOccurrenceReference id="1065091" name="Clients" UUID="TO-UUID"></TableOccurrenceReference>
+										</FieldReference>
+									</Field>
+								</LayoutObject>
+								<LayoutObject hash="S" id="5" type="Text" name="" kind="2">
+									<UUID>SIDE-UUID</UUID>
+									<Bounds top="20" left="210" bottom="70" right="400"></Bounds>
+									<Text>
+										<StyledText>
+											<Data><![CDATA[Side note]]></Data>
+										</StyledText>
+									</Text>
+								</LayoutObject>
+							</ObjectList>
+						</Part>
+						<Part type="Footer" kind="7">
+							<Definition type="Footer" kind="7" size="50" absolute="300" Options="0"></Definition>
+							<ObjectList membercount="1">
+								<LayoutObject hash="F" id="6" type="Text" name="" kind="2">
+									<UUID>FOOTER-UUID</UUID>
+									<Bounds top="310" left="10" bottom="330" right="200"></Bounds>
+								</LayoutObject>
+							</ObjectList>
+						</Part>
+					</PartsList>
+					<UUID>LAYOUT-UUID</UUID>
+				</Layout>
+			</LayoutCatalog>
+		</AddAction>
+	</Structure>
+</FMSaveAsXML>

@@ -1,0 +1,9 @@
+# FileMaker files, exports and the working copies stay on this machine.
+*.fmp12
+*.fmp12.bak
+.patchwork/
+raw/
+
+# Secrets
+.env
+.env.*

@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fm-patchwork"
+dynamic = ["version"]
+description = "Let your AI agent edit FileMaker: fields, scripts, value lists, layouts and themes, checked and reversible. MCP server for Claude Code, Cursor, Codex and Antigravity."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Abdeltoto" }]
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["filemaker", "claris", "fmupgradetool", "fmp12", "mcp", "mcp-server", "ai-agents", "claude-code", "cursor", "codex", "antigravity", "low-code"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Database",
+  "Topic :: Software Development :: Build Tools",
+]
+
+[project.optional-dependencies]
+image = ["Pillow>=9"]
+
+[project.scripts]
+patchwork = "patchwork.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Abdeltoto/patchwork"
+Issues = "https://github.com/Abdeltoto/patchwork/issues"
+Changelog = "https://github.com/Abdeltoto/patchwork/blob/main/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "patchwork.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+patchwork = ["templates/*", "skills/*/SKILL.md"]

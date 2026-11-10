@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Abdeltoto/patchwork/main/brand.schema.json",
+  "title": "Patchwork brand file",
+  "description": "Input of `patchwork rebrand`: the brand applied to a FileMaker solution.",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": {
+      "type": "string",
+      "description": "Brand name. The rewritten theme is renamed to it."
+    },
+    "theme": {
+      "type": "string",
+      "description": "Theme to rewrite, by display or internal name. Default: the theme most layouts use."
+    },
+    "colors": {
+      "type": "object",
+      "description": "Old hex color -> new hex color, without #. Applied to the theme and to local layout styles.",
+      "patternProperties": {
+        "^#?[0-9A-Fa-f]{6}$": { "type": "string", "pattern": "^#?[0-9A-Fa-f]{6}$" }
+      },
+      "additionalProperties": false
+    },
+    "fonts": {
+      "type": "object",
+      "description": "Old font -> new font, each written WindowsName,MacPostScriptName (e.g. Georgia,Georgia-Bold).",
+      "additionalProperties": { "type": "string", "pattern": "^[^,]+,[^,]+$" }
+    },
+    "logo": {
+      "type": "object",
+      "required": ["image", "replace"],
+      "additionalProperties": false,
+      "properties": {
+        "image": { "type": "string", "description": "PNG path, relative to the brand file." },
+        "replace": { "type": "string", "pattern": "^[^:]+::.+$", "description": "Existing container shown on layouts, as Table::Field. Every layout object showing it gets the new logo." },
+        "field": { "type": "string", "default": "Brand Logo", "description": "Name of the global container field that holds the new logo." },
+        "width": { "type": "integer", "minimum": 16, "description": "Resize the PNG to this width in pixels (needs Pillow). The embedded logo must stay under about 28,000 base64 characters." }
+      }
+    }
+  }
+}
