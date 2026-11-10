@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Abdeltoto" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = []
 keywords = ["filemaker", "claris", "fmupgradetool", "fmp12", "mcp", "mcp-server", "ai-agents", "claude-code", "cursor", "codex", "antigravity", "low-code"]
 classifiers = [

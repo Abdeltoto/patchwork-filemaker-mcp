@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/Abdeltoto/patchwork/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Abdeltoto/patchwork/actions/workflows/ci.yml)
 [![Stars](https://img.shields.io/github/stars/Abdeltoto/patchwork?style=flat-square&color=8b5cf6)](https://github.com/Abdeltoto/patchwork/stargazers)
 [![Licence MIT](https://img.shields.io/badge/licence-MIT-14b8a6?style=flat-square)](https://github.com/Abdeltoto/patchwork/blob/main/LICENSE)
-![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FileMaker 2026](https://img.shields.io/badge/FileMaker-2026-000000?style=flat-square&logo=claris&logoColor=white)
 ![Serveur MCP](https://img.shields.io/badge/MCP-serveur-000000?style=flat-square&logo=modelcontextprotocol&logoColor=white)
 ![Zéro dépendance](https://img.shields.io/badge/d%C3%A9pendances-0-f59e0b?style=flat-square)
