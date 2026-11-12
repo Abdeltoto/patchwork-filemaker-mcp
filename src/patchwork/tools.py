@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 import platform
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -26,9 +25,7 @@ def candidates(name: str) -> list[Path]:
     override = os.environ.get("FM_UPGRADE_TOOL" if name == "FMUpgradeTool" else "FM_DEVELOPER_TOOL")
     if override:
         found.append(Path(override))
-    on_path = shutil.which(name)
-    if on_path:
-        found.append(Path(on_path))
+    found += [Path(entry) / exe for entry in os.environ.get("PATH", "").split(os.pathsep) if Path(entry).is_absolute()]
     program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
     found += [
         program_files / "FileMaker" / "FileMaker Server" / "Database Server" / exe,

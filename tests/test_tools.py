@@ -72,6 +72,23 @@ class SafetyTests(unittest.TestCase):
                     tools.Runner("Admin", no_password=True, quiet=True).validate(Path(tmp) / "a.fmp12", Path(tmp) / "p.xml")
             self.assertIn("open in FileMaker", str(caught.exception))
 
+    def test_tool_in_the_current_folder_is_never_picked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = Path(tmp) / ("FMUpgradeTool.exe" if os.name == "nt" else "FMUpgradeTool")
+            fake.write_bytes(b"")
+            fake.chmod(0o755)
+            env = {k: v for k, v in os.environ.items() if k not in ("FM_UPGRADE_TOOL", "FM_DEVELOPER_TOOL")}
+            env["PATH"] = os.pathsep.join([".", ""])
+            previous = os.getcwd()
+            os.chdir(tmp)
+            try:
+                with mock.patch.dict(os.environ, env, clear=True):
+                    for name in ("FMUpgradeTool", "FMDeveloperTool"):
+                        found = tools.find_tool(name)
+                        self.assertFalse(found is not None and tools.same_path(found.parent, Path(tmp)), found)
+            finally:
+                os.chdir(previous)
+
 
 if __name__ == "__main__":
     unittest.main()
