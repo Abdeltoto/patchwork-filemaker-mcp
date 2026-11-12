@@ -140,6 +140,13 @@ class McpTests(unittest.TestCase):
         reply = self.converse({"jsonrpc": "2.0", "id": 4, "method": "resources/list"})[0]
         self.assertEqual(reply["error"]["code"], -32601)
 
+    def test_tools_that_can_lose_work_are_marked_destructive(self):
+        reply = self.converse({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})[0]
+        annotations = {t["name"]: t["annotations"] for t in reply["result"]["tools"]}
+        destructive = {"patchwork_open", "patchwork_delete", "patchwork_undo", "patchwork_save", "patchwork_push", "patchwork_replace"}
+        for name, hints in annotations.items():
+            self.assertEqual(hints["destructiveHint"], name in destructive, name)
+
 
 if __name__ == "__main__":
     unittest.main()

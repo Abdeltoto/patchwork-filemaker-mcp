@@ -31,17 +31,17 @@ KIND_ENUM = ["layout", "script", "value-list", "custom-function", "theme", "fiel
 
 
 def tool(name: str, description: str, properties: dict, required: list[str], handler: Callable, needs_ws: bool = True,
-         read_only: bool = False) -> dict:
+         read_only: bool = False, destructive: bool = False) -> dict:
     return {"name": name, "description": description, "handler": handler, "needs_ws": needs_ws,
             "inputSchema": {"type": "object", "properties": properties, "required": required},
-            "annotations": {"readOnlyHint": read_only, "destructiveHint": False, "idempotentHint": read_only}}
+            "annotations": {"readOnlyHint": read_only, "destructiveHint": destructive, "idempotentHint": read_only}}
 
 
 TOOLS = [
     tool("patchwork_open", "Open a closed .fmp12 as a new working copy (v000). Never modifies the source. The password comes from PATCHWORK_PASSWORD.",
          {"source": S, "account": S, "no_password": {"type": "boolean"}, "project": {"type": "string", "description": "Folder for the .patchwork workspace. Default: the source file's folder."},
           "force": {"type": "boolean", "description": "Replace an existing workspace."}},
-         ["source", "account"], None, needs_ws=False),
+         ["source", "account"], None, needs_ws=False, destructive=True),
     tool("patchwork_status", "Current version, source file and object counts.", {}, [], lambda ws, a: ops.status(ws), read_only=True),
     tool("patchwork_list", "List objects: layouts, scripts, value-lists, custom-functions, themes, tables, table-occurrences, or fields (with table).",
          {"kind": {"type": "string", "enum": list(ops.LISTABLE)}, "table": S}, [],
@@ -68,7 +68,7 @@ TOOLS = [
          lambda ws, a: ops.append_steps(ws, a["script"], **pick(a, "steps", "message", "dry_run"))),
     tool("patchwork_replace", "Replace a whole object with edited XML from patchwork_show. Supported: layout, theme, value-list, custom-function.",
          {"kind": {"type": "string", "enum": ["layout", "theme", "value-list", "custom-function"]}, "name": S, "xml": S, **EDIT},
-         ["kind", "name", "xml"], lambda ws, a: ops.replace(ws, **pick(a, "kind", "name", "xml", "message", "dry_run"))),
+         ["kind", "name", "xml"], lambda ws, a: ops.replace(ws, **pick(a, "kind", "name", "xml", "message", "dry_run")), destructive=True),
     tool("patchwork_place_field", "Put a field on a layout. Copies the look and label of `near`, a field already on the layout, "
          "and inserts a row below it (objects underneath move down, the part grows). side=right places it next to `near` if there is room.",
          {"layout": S, "field": {"type": "string", "description": "Occurrence::Field, e.g. Clients::Status"}, "near": S,
@@ -83,7 +83,7 @@ TOOLS = [
          "Refused when other objects reference it: show the list to the user, and only then retry with force=true.",
          {"kind": {"type": "string", "enum": ["script", "layout", "value-list", "custom-function", "field"]}, "name": S,
           "force": {"type": "boolean"}, **EDIT},
-         ["kind", "name"], lambda ws, a: ops.delete(ws, **pick(a, "kind", "name", "message", "dry_run", "force"))),
+         ["kind", "name"], lambda ws, a: ops.delete(ws, **pick(a, "kind", "name", "message", "dry_run", "force")), destructive=True),
     tool("patchwork_retheme", "Rewrite a theme: colors (map of hex to hex), fonts (map 'WinName,MacName' to 'WinName,MacName'), new display name.",
          {"theme": S, "colors": {"type": "object"}, "fonts": {"type": "object"}, "rename": S, **EDIT}, [],
          lambda ws, a: ops.retheme(ws, **pick(a, "theme", "colors", "fonts", "rename", "message", "dry_run"))),
@@ -93,11 +93,11 @@ TOOLS = [
          lambda ws, a: ops.recolor_layouts(ws, **pick(a, "colors", "fonts", "swap_field", "only", "message", "dry_run"))),
     tool("patchwork_palette", "Colors a theme uses, most frequent first.", {"theme": S}, [], lambda ws, a: ops.palette(ws, a.get("theme", "")), read_only=True),
     tool("patchwork_push", "Apply a hand-written FMUpgradeToolPatch. Prefer the specific tools.", {"patch_xml": S, **EDIT}, ["patch_xml"],
-         lambda ws, a: ops.push(ws, **pick(a, "patch_xml", "message", "dry_run"))),
+         lambda ws, a: ops.push(ws, **pick(a, "patch_xml", "message", "dry_run")), destructive=True),
     tool("patchwork_log", "Version history with the changes of each version.", {}, [], lambda ws, a: ops.log(ws), read_only=True),
-    tool("patchwork_undo", "Drop the last version.", {}, [], lambda ws, a: ops.undo(ws)),
+    tool("patchwork_undo", "Drop the last version.", {}, [], lambda ws, a: ops.undo(ws), destructive=True),
     tool("patchwork_save", "Write the current version to a new .fmp12 file (never the source).", {"dest": S, "force": {"type": "boolean"}}, ["dest"],
-         lambda ws, a: ops.save(ws, a["dest"], a.get("force", False))),
+         lambda ws, a: ops.save(ws, a["dest"], a.get("force", False)), destructive=True),
 ]
 BY_NAME = {t["name"]: t for t in TOOLS}
 
