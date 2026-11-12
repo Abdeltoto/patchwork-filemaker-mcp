@@ -147,6 +147,32 @@ class McpTests(unittest.TestCase):
         for name, hints in annotations.items():
             self.assertEqual(hints["destructiveHint"], name in destructive, name)
 
+    def test_mcp_never_replaces_or_deletes_outside_the_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project, outside = Path(tmp) / "project", Path(tmp) / "other"
+            project.mkdir()
+            (outside / ".patchwork").mkdir(parents=True)
+            (outside / ".patchwork" / "state.json").write_text("{}", encoding="utf-8")
+            other = outside / "Other.fmp12"
+            other.write_bytes(b"other client")
+            src = project / "App.fmp12"
+            src.write_bytes(b"fmp12")
+            Workspace.create(src, "Admin", True, project, runner=FakeTool())
+            def call(ident, name, arguments):
+                return {"jsonrpc": "2.0", "id": ident, "method": "tools/call", "params": {"name": name, "arguments": arguments}}
+            replies = self.converse(
+                call(1, "patchwork_save", {"dest": str(other), "force": True}),
+                call(2, "patchwork_open", {"source": str(other), "account": "Admin", "no_password": True,
+                                           "project": str(outside), "force": True}),
+                call(3, "patchwork_save", {"dest": str(project / "Saved.fmp12"), "force": True}),
+                project=project)
+            self.assertTrue(replies[0]["result"]["isError"])
+            self.assertEqual(other.read_bytes(), b"other client")
+            self.assertTrue(replies[1]["result"]["isError"])
+            self.assertTrue((outside / ".patchwork" / "state.json").is_file())
+            self.assertFalse(replies[2]["result"]["isError"], replies[2])
+            self.assertTrue((project / "Saved.fmp12").is_file())
+
 
 if __name__ == "__main__":
     unittest.main()

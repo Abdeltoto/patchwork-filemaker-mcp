@@ -7,6 +7,7 @@ Works with any MCP client: Claude Code, Claude Desktop, Cursor, Codex, VS Code.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -15,6 +16,7 @@ from patchwork import PatchworkError, __version__, ops, script
 from patchwork.workspace import Workspace
 
 PROTOCOL = "2025-06-18"
+OUTSIDE_ENV = "PATCHWORK_ALLOW_OUTSIDE"
 INSTRUCTIONS = """Patchwork edits FileMaker (.fmp12) files through Claris FMUpgradeTool, on a versioned working copy.
 Start with patchwork_open, then read before you write: patchwork_list and patchwork_show give the real XML of any object.
 Every edit creates a new version, is re-exported and checked; a change FMUpgradeTool silently skipped is refused.
@@ -117,13 +119,24 @@ class Server:
         spec = BY_NAME.get(name)
         if not spec:
             raise PatchworkError(f"Unknown tool: {name}")
+        if name == "patchwork_save" and args.get("force"):
+            self.require_inside(Path(args["dest"]).expanduser(), "replace")
         if name == "patchwork_open":
             source = Path(args["source"]).expanduser()
             project = args.get("project") or (str(self.project) if self.project else str(source.resolve().parent))
+            if args.get("force"):
+                self.require_inside(Path(project).expanduser(), "delete the workspace in")
             text = ops.open_file(str(source), args["account"], args.get("no_password", False), project, args.get("force", False))
             self.project = Path(project)
             return text
         return spec["handler"](self.workspace(), args)
+
+    def require_inside(self, path: Path, action: str) -> None:
+        folder = (self.project or Path.cwd()).resolve()
+        if os.environ.get(OUTSIDE_ENV) == "1" or path.resolve().is_relative_to(folder):
+            return
+        raise PatchworkError(f"Refused to {action} {path}: it is outside the project folder {folder}. "
+                             f"Ask the user, or set {OUTSIDE_ENV}=1.")
 
     def handle(self, message: dict) -> dict | None:
         method, ident = message.get("method"), message.get("id")

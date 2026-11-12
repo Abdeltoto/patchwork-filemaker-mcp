@@ -14,6 +14,7 @@ FMUpgradeTool and FMDeveloperTool only accept the password and the encryption ke
 - If your security team records process command lines, tell them, or exclude these two tools.
 - Structure exports and copies of the file live in `.patchwork/`, which ignores itself in Git. `.fmp12` files are also ignored in this repository and in folders wired with `patchwork init`.
 - Patchwork has no network code and no runtime dependency.
+- Through MCP, an agent cannot replace a file or delete a workspace outside the project folder (`force` is refused there). Set `PATCHWORK_ALLOW_OUTSIDE=1` to lift this.
 
 ## Reporting a vulnerability
 
