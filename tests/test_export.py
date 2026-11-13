@@ -41,9 +41,11 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(self.export.field_references("NEW-UUID"), 0)
 
     def test_unknown_names_raise_clear_errors(self):
-        for call, message in ((lambda: self.export.layout("Nope"), "Layout not found: Nope"),
-                              (lambda: self.export.field("Admin", "Nope"), "Field not found: Admin::Nope"),
-                              (lambda: self.export.field_catalog("Nope"), "Base table not found: Nope")):
+        for call, message in (
+            (lambda: self.export.layout("Nope"), "Layout not found: Nope"),
+            (lambda: self.export.field("Admin", "Nope"), "Field not found: Admin::Nope"),
+            (lambda: self.export.field_catalog("Nope"), "Base table not found: Nope"),
+        ):
             with self.assertRaisesRegex(PatchworkError, message):
                 call()
 

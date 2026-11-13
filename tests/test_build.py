@@ -26,12 +26,16 @@ class BuildTests(unittest.TestCase):
             build.recolor("", {"0091CE": "teal"})
 
     def test_theme_patch_replaces_by_uuid_with_new_colors_fonts_and_name(self):
-        patch = build.theme_patch(self.export, "Apex Blue", "Acme", {"0091CE": "00475A"}, {"HelveticaNeue,HelveticaNeue": "Georgia,Georgia"})
+        patch = build.theme_patch(
+            self.export, "Apex Blue", "Acme", {"0091CE": "00475A"}, {"HelveticaNeue,HelveticaNeue": "Georgia,Georgia"}
+        )
         self.assertIn('<Replace type="Theme" UUID="THEME-UUID">', patch)
         self.assertIn('Display="Acme"', patch)
         self.assertIn(TEAL, patch)
         self.assertIn("-fm-font-family(Georgia,Georgia)", patch)
-        self.assertTrue(patch.startswith('<?xml version="1.0" encoding="UTF-8"?>\n<FMUpgradeToolPatch version="2.3.0.0">'))
+        self.assertTrue(
+            patch.startswith('<?xml version="1.0" encoding="UTF-8"?>\n<FMUpgradeToolPatch version="2.3.0.0">')
+        )
 
     def test_add_field_uses_the_catalog_and_next_id(self):
         field = build.field_xml(self.export, "Admin", "Status", "Text", comment="State")
@@ -45,7 +49,9 @@ class BuildTests(unittest.TestCase):
             build.field_xml(self.export, "Admin", "Logo", "Container")
 
     def test_calc_field_carries_its_context(self):
-        field = build.field_xml(self.export, "Admin", "Logo Calc", "Container", is_global=True, calc='Base64Decode ( "AA==" ; "x.png" )')
+        field = build.field_xml(
+            self.export, "Admin", "Logo Calc", "Container", is_global=True, calc='Base64Decode ( "AA==" ; "x.png" )'
+        )
         self.assertIn('fieldtype="Calculated" datatype="Binary"', field)
         self.assertIn('global="True"', field)
         self.assertIn('name="Admin" UUID="TO-UUID"', field)
@@ -61,7 +67,9 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(build.image_calc(png), 'Base64Decode ( "iVBORw0K" ; "logo.png" )')
 
     def test_layouts_patch_only_touches_changed_layouts_and_keeps_repetition(self):
-        patch, names = build.layouts_patch(self.export, None, {"0091CE": "00475A"}, {}, ("Admin::Logo", "Admin::Logo New"))
+        patch, names = build.layouts_patch(
+            self.export, None, {"0091CE": "00475A"}, {}, ("Admin::Logo", "Admin::Logo New")
+        )
         self.assertEqual(names, ["Dashboard"])
         self.assertIn('<Replace type="Layout" UUID="LAYOUT-UUID">', patch)
         self.assertIn('<FieldReference id="40" name="Logo New" repetition="1" UUID="NEW-UUID">', patch)

@@ -33,10 +33,17 @@ class Box:
         return Box(self.top, self.left, self.bottom + dy, self.right)
 
     def union(self, other: "Box") -> "Box":
-        return Box(min(self.top, other.top), min(self.left, other.left), max(self.bottom, other.bottom), max(self.right, other.right))
+        return Box(
+            min(self.top, other.top),
+            min(self.left, other.left),
+            max(self.bottom, other.bottom),
+            max(self.right, other.right),
+        )
 
     def overlaps(self, other: "Box") -> bool:
-        return self.top < other.bottom and other.top < self.bottom and self.left < other.right and other.left < self.right
+        return (
+            self.top < other.bottom and other.top < self.bottom and self.left < other.right and other.left < self.right
+        )
 
     def tag(self) -> str:
         return f'<Bounds top="{num(self.top)}" left="{num(self.left)}" bottom="{num(self.bottom)}" right="{num(self.right)}"></Bounds>'
@@ -73,7 +80,9 @@ def top_level(part: str, offset: int) -> list[Obj]:
         if len(match.group(1)) == depth:
             xml = match.group(0)
             ident = re.search(r'\sid="(\d+)"', xml[: xml.index(">")])
-            found.append(Obj(offset + match.start(), offset + match.end(), xml, ident.group(1) if ident else "", own_bounds(xml)))
+            found.append(
+                Obj(offset + match.start(), offset + match.end(), xml, ident.group(1) if ident else "", own_bounds(xml))
+            )
     return found
 
 
@@ -88,8 +97,9 @@ def field_target(export: Export, field: str) -> tuple[str, str, str, str]:
     return field_id, name, field_uuid, export.table_occurrence(occurrence)
 
 
-def place_field(export: Export, layout: str, field: str, near: str, label: str | None = None,
-                side: str = "below") -> tuple[str, str]:
+def place_field(
+    export: Export, layout: str, field: str, near: str, label: str | None = None, side: str = "below"
+) -> tuple[str, str]:
     """(whole new layout XML, field UUID). `near` is a field already on the layout, as Name or TO::Name."""
     block = export.layout(layout)
     xml = block.xml
@@ -99,12 +109,21 @@ def place_field(export: Export, layout: str, field: str, near: str, label: str |
     parts = list(re.finditer(r"<Part type=\"([^\"]*)\"[\s\S]*?</Part>", xml))
     for part in parts:
         objs = top_level(part.group(0), part.start())
-        anchor = next((o for o in objs if re.search(rf'<FieldReference [^>]*\bname="{re.escape(escape(near_name))}"', o.xml)
-                       and (near_name == near or f'name="{escape(near.split("::")[0])}"' in o.xml)), None)
+        anchor = next(
+            (
+                o
+                for o in objs
+                if re.search(rf'<FieldReference [^>]*\bname="{re.escape(escape(near_name))}"', o.xml)
+                and (near_name == near or f'name="{escape(near.split("::")[0])}"' in o.xml)
+            ),
+            None,
+        )
         if anchor:
             break
     else:
-        raise PatchworkError(f"No field {near!r} directly on layout {layout!r}. Name a field that is on it, e.g. one from `patchwork show layout`.")
+        raise PatchworkError(
+            f"No field {near!r} directly on layout {layout!r}. Name a field that is on it, e.g. one from `patchwork show layout`."
+        )
     if re.search(rf'<FieldReference [^>]*\bUUID="{field_uuid}"', part.group(0)):
         raise PatchworkError(f"{field} is already on {layout!r}.")
 
@@ -113,8 +132,11 @@ def place_field(export: Export, layout: str, field: str, near: str, label: str |
     group = anchor.box.union(caption.box) if caption else anchor.box
     if side == "below":
         line = group.bottom - SLACK
-        under = [o.box.top - group.bottom for o in objs
-                 if o.box.top >= line and o.box.left < group.right and group.left < o.box.right]
+        under = [
+            o.box.top - group.bottom
+            for o in objs
+            if o.box.top >= line and o.box.left < group.right and group.left < o.box.right
+        ]
         gap = min(under) if under and 0 <= min(under) <= 40 else GAP
         dy, dx = group.bottom - group.top + gap, 0.0
     elif side == "right":
@@ -131,21 +153,34 @@ def place_field(export: Export, layout: str, field: str, near: str, label: str |
     if blocking:
         names = [re.search(r'<FieldReference [^>]*\bname="([^"]*)"', o.xml) for o in blocking]
         what = ", ".join(f"field {n.group(1)}" if n else f"object {o.id}" for n, o in zip(names, blocking))
-        raise PatchworkError(f"No room {side} {near!r}: it would cover {what}. "
-                             f"Try side={'right' if side == 'below' else 'below'} or another field.")
+        raise PatchworkError(
+            f"No room {side} {near!r}: it would cover {what}. "
+            f"Try side={'right' if side == 'below' else 'below'} or another field."
+        )
 
-    next_id = max((int(i) for i in re.findall(r'<LayoutObject [^>]*?\bid="(\d+)"', export.section("LayoutCatalog"))), default=0) + 1
+    next_id = (
+        max(
+            (int(i) for i in re.findall(r'<LayoutObject [^>]*?\bid="(\d+)"', export.section("LayoutCatalog"))),
+            default=0,
+        )
+        + 1
+    )
     new_field = copy(anchor.xml, str(next_id), dy, dx)
-    new_field = re.sub(r"<FieldReference [^>]*>[\s\S]*?</FieldReference>",
-                       f'<FieldReference id="{field_id}" name="{escape(field_name)}" repetition="1" UUID="{field_uuid}">'
-                       f"\n{indent_of(anchor.xml, 'TableOccurrenceReference')}{to_ref}\n{indent_of(anchor.xml, 'FieldReference')}</FieldReference>",
-                       new_field, count=1)
+    new_field = re.sub(
+        r"<FieldReference [^>]*>[\s\S]*?</FieldReference>",
+        f'<FieldReference id="{field_id}" name="{escape(field_name)}" repetition="1" UUID="{field_uuid}">'
+        f"\n{indent_of(anchor.xml, 'TableOccurrenceReference')}{to_ref}\n{indent_of(anchor.xml, 'FieldReference')}</FieldReference>",
+        new_field,
+        count=1,
+    )
     new_field = re.sub(r"\s*<TabOrder [\s\S]*?</TabOrder>", "", new_field)
     added = [new_field]
     if caption:
         text = escape_cdata(label if label is not None else field_name)
         new_caption = copy(caption.xml, str(next_id + 1), dy, dx)
-        new_caption = re.sub(r"<Data><!\[CDATA\[[\s\S]*?\]\]></Data>", lambda _: f"<Data><![CDATA[{text}]]></Data>", new_caption, count=1)
+        new_caption = re.sub(
+            r"<Data><!\[CDATA\[[\s\S]*?\]\]></Data>", lambda _: f"<Data><![CDATA[{text}]]></Data>", new_caption, count=1
+        )
         new_field = new_field.replace(f"<Label>{caption.id}</Label>", f"<Label>{next_id + 1}</Label>")
         added = [new_caption, new_field]
 
@@ -155,20 +190,31 @@ def place_field(export: Export, layout: str, field: str, near: str, label: str |
             if o.box.top >= line:
                 edits.append((o.start, o.end, shift(o.xml, dy)))
             elif o.box.bottom > line and stretches(o):
-                edits.append((o.start, o.end, BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).grown(dy).tag(), o.xml, count=1)))
+                edits.append(
+                    (
+                        o.start,
+                        o.end,
+                        BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).grown(dy).tag(), o.xml, count=1),
+                    )
+                )
         definition = re.search(r'<Definition [^>]*\bsize="([\d.]+)"', part.group(0))
         if definition:
             at = part.start() + definition.start(1)
             edits.append((at, at + len(definition.group(1)), num(float(definition.group(1)) + dy)))
-        for later in parts[parts.index(part) + 1:]:
+        for later in parts[parts.index(part) + 1 :]:
             moved = BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).moved(dy, 0).tag(), later.group(0))
-            moved = re.sub(r'(<Definition [^>]*\babsolute=")([\d.]+)', lambda m: m.group(1) + num(float(m.group(2)) + dy), moved, count=1)
+            moved = re.sub(
+                r'(<Definition [^>]*\babsolute=")([\d.]+)',
+                lambda m: m.group(1) + num(float(m.group(2)) + dy),
+                moved,
+                count=1,
+            )
             edits.append((later.start(), later.end(), moved))
     for start, end, text in sorted(edits, key=lambda e: e[0], reverse=True):
         xml = xml[:start] + text + xml[end:]
     count = re.compile(r'(<ObjectList membercount=")(\d+)(">)')
     first = count.search(xml, part.start())
-    xml = xml[: first.start(2)] + str(int(first.group(2)) + len(added)) + xml[first.end(2):]
+    xml = xml[: first.start(2)] + str(int(first.group(2)) + len(added)) + xml[first.end(2) :]
     return xml, field_uuid
 
 

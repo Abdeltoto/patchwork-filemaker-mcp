@@ -13,7 +13,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from patchwork import PatchworkError
-from patchwork.build import add_field_action, field_xml, image_calc, layouts_patch, normalize_hex, split_field, theme_replace, wrap
+from patchwork.build import (
+    add_field_action,
+    field_xml,
+    image_calc,
+    layouts_patch,
+    normalize_hex,
+    split_field,
+    theme_replace,
+    wrap,
+)
 from patchwork.export import Export
 from patchwork.tools import Runner, require_copy, require_source
 
@@ -97,13 +106,18 @@ def rebrand(
 
         theme = brand.theme or export.main_theme()
         theme_block = export.theme(theme)
-        say(f"2/5  Rewriting theme {theme_block.name!r} as {brand.name!r}" + (" + adding the logo field" if brand.logo else ""))
+        say(
+            f"2/5  Rewriting theme {theme_block.name!r} as {brand.name!r}"
+            + (" + adding the logo field" if brand.logo else "")
+        )
         actions = []
         if brand.logo:
             table, _ = split_field(brand.logo.replace)
             export.field(*split_field(brand.logo.replace))
             calc = image_calc(brand.logo.image, brand.logo.width)
-            fxml = field_xml(export, table, brand.logo.field, "Container", f"{brand.name} logo, added by Patchwork", True, calc)
+            fxml = field_xml(
+                export, table, brand.logo.field, "Container", f"{brand.name} logo, added by Patchwork", True, calc
+            )
             actions.append(add_field_action(export, table, fxml))
         actions.append(theme_replace(export, theme, brand.name, brand.colors, brand.fonts))
         current = step(runner, current, wrap(*actions, version=export.version), work / "1-theme")
@@ -123,7 +137,9 @@ def rebrand(
         export = export_of(runner, current, work / "final.xml")
         displays = [display for display, _, _ in export.themes()]
         if brand.name not in displays:
-            raise PatchworkError(f"FMUpgradeTool reported success but theme {brand.name!r} is missing. Work kept in {work}")
+            raise PatchworkError(
+                f"FMUpgradeTool reported success but theme {brand.name!r} is missing. Work kept in {work}"
+            )
         logo_refs = None
         if brand.logo:
             table, _ = split_field(brand.logo.replace)

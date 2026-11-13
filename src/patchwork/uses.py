@@ -58,21 +58,40 @@ def owners(export: Export) -> list[tuple[int, int, str]]:
         if bounds:
             words = re.sub(r"(?<!^)(?=[A-Z])", " ", catalog[: -len("Catalog")]).lower()
             spans.append((*bounds, f"{words} catalog"))
-    scan("StepsForScripts", r'<Script>\s*<ScriptReference [^>]*\bname="([^"]*)"[\s\S]*?</Script>',
-         lambda m: f"script {unescape(m.group(1))}")
-    scan("LayoutCatalog", r'<Layout [^>]*\bname="([^"]*)"[^>]*>[\s\S]*?</Layout>', lambda m: f"layout {unescape(m.group(1))}")
-    scan("CustomFunctionsCatalog", r'<CustomFunction [^>]*\bname="([^"]*)"[\s\S]*?</CustomFunction>',
-         lambda m: f"custom-function {unescape(m.group(1))}")
-    scan("TableOccurrenceCatalog", r'<TableOccurrence [^>]*\bname="([^"]*)"[\s\S]*?</TableOccurrence>',
-         lambda m: f"table-occurrence {unescape(m.group(1))}")
-    scan("ValueListCatalog", r'<ValueList [^>]*\bname="([^"]*)"[\s\S]*?</ValueList>', lambda m: f"value-list {unescape(m.group(1))}")
+    scan(
+        "StepsForScripts",
+        r'<Script>\s*<ScriptReference [^>]*\bname="([^"]*)"[\s\S]*?</Script>',
+        lambda m: f"script {unescape(m.group(1))}",
+    )
+    scan(
+        "LayoutCatalog",
+        r'<Layout [^>]*\bname="([^"]*)"[^>]*>[\s\S]*?</Layout>',
+        lambda m: f"layout {unescape(m.group(1))}",
+    )
+    scan(
+        "CustomFunctionsCatalog",
+        r'<CustomFunction [^>]*\bname="([^"]*)"[\s\S]*?</CustomFunction>',
+        lambda m: f"custom-function {unescape(m.group(1))}",
+    )
+    scan(
+        "TableOccurrenceCatalog",
+        r'<TableOccurrence [^>]*\bname="([^"]*)"[\s\S]*?</TableOccurrence>',
+        lambda m: f"table-occurrence {unescape(m.group(1))}",
+    )
+    scan(
+        "ValueListCatalog",
+        r'<ValueList [^>]*\bname="([^"]*)"[\s\S]*?</ValueList>',
+        lambda m: f"value-list {unescape(m.group(1))}",
+    )
     bounds = section("FieldsForTables")
     if bounds:
         for catalog in re.compile(r"<FieldCatalog>[\s\S]*?</FieldCatalog>").finditer(text, *bounds):
             table = re.search(r'<BaseTableReference [^>]*\bname="([^"]*)"', catalog.group(0))
             prefix = unescape(table.group(1)) if table else "?"
             spans.append((catalog.start(), catalog.end(), f"table {prefix}"))
-            for match in re.compile(r'<Field id="\d+" name="([^"]*)"[\s\S]*?</Field>').finditer(text, catalog.start(), catalog.end()):
+            for match in re.compile(r'<Field id="\d+" name="([^"]*)"[\s\S]*?</Field>').finditer(
+                text, catalog.start(), catalog.end()
+            ):
                 spans.append((match.start(), match.end(), f"field {prefix}::{unescape(match.group(1))}"))
     return spans
 
@@ -87,9 +106,14 @@ def resolve(export: Export, kind: str, name: str) -> tuple[str, str, list[re.Pat
     if kind == "field":
         table, field_name = objects.split_field(name)
         _, uuid = export.field(table, field_name)
-        occurrences = [o.name for o in objects.items(export, "table-occurrences")
-                       if re.search(rf'<BaseTableReference [^>]*\bname="{re.escape(table)}"', o.xml)]
-        patterns = [re.compile(rf"(?<![\w:]){re.escape(o)}::{re.escape(field_name)}(?![\w])") for o in occurrences or [table]]
+        occurrences = [
+            o.name
+            for o in objects.items(export, "table-occurrences")
+            if re.search(rf'<BaseTableReference [^>]*\bname="{re.escape(table)}"', o.xml)
+        ]
+        patterns = [
+            re.compile(rf"(?<![\w:]){re.escape(o)}::{re.escape(field_name)}(?![\w])") for o in occurrences or [table]
+        ]
         return f"field {table}::{field_name}", uuid, patterns, table
     item = objects.find(export, kind, name)
     patterns = [re.compile(rf"(?<![\w.]){re.escape(item.name)}(?![\w])")] if kind == "custom-function" else []

@@ -69,7 +69,9 @@ class SafetyTests(unittest.TestCase):
                 run.return_value.stdout = "Error: 803"
                 run.return_value.stderr = ""
                 with self.assertRaises(PatchworkError) as caught:
-                    tools.Runner("Admin", no_password=True, quiet=True).validate(Path(tmp) / "a.fmp12", Path(tmp) / "p.xml")
+                    tools.Runner("Admin", no_password=True, quiet=True).validate(
+                        Path(tmp) / "a.fmp12", Path(tmp) / "p.xml"
+                    )
             self.assertIn("open in FileMaker", str(caught.exception))
 
     def test_tool_in_the_current_folder_is_never_picked(self):

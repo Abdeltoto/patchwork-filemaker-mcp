@@ -38,7 +38,9 @@ class ObjectTests(unittest.TestCase):
         self.assertRegex(action, r"<UUID>[0-9A-F-]{36}</UUID>")
 
     def test_add_custom_function_goes_in_an_object_list(self):
-        action = objects.add_object(self.export, "custom-function", objects.custom_function_xml("Hello", ["who"], '"Hi " & who'))
+        action = objects.add_object(
+            self.export, "custom-function", objects.custom_function_xml("Hello", ["who"], '"Hi " & who')
+        )
         self.assertIn('<ObjectList membercount="1">', action)
         self.assertIn('<CustomFunction id="27" name="Hello" access="All">', action)
         self.assertIn("<Display>Hello ( who )</Display>", action)
@@ -69,8 +71,13 @@ class ObjectTests(unittest.TestCase):
 
     def test_replace_and_delete_use_the_object_uuid(self):
         xml = objects.show(self.export, "value-list", "Industries").replace("Retail", "Services")
-        self.assertIn('<Replace type="ValueList" UUID="VL-UUID">', objects.replace_object(self.export, "value-list", "Industries", xml))
-        self.assertIn('UUID="SCRIPT-UUID" type="ScriptReference"', objects.delete_object(self.export, "script", "Close Window"))
+        self.assertIn(
+            '<Replace type="ValueList" UUID="VL-UUID">',
+            objects.replace_object(self.export, "value-list", "Industries", xml),
+        )
+        self.assertIn(
+            'UUID="SCRIPT-UUID" type="ScriptReference"', objects.delete_object(self.export, "script", "Close Window")
+        )
         field = objects.delete_object(self.export, "field", "Admin::Logo")
         self.assertIn('<ItemReference UUID="LOGO-UUID" type="FieldReference">', field)
         self.assertIn('<BaseTableReference id="129" name="Admin"', field)
@@ -84,8 +91,9 @@ class ObjectTests(unittest.TestCase):
     def test_diff_reports_added_changed_and_deleted(self):
         text = self.export.text
         after = Export(
-            text.replace("<![CDATA[600]]>", "<![CDATA[640]]>")
-            .replace('<ValueList id="2" name="Industries">', '<ValueList id="2" name="Sectors">')
+            text.replace("<![CDATA[600]]>", "<![CDATA[640]]>").replace(
+                '<ValueList id="2" name="Industries">', '<ValueList id="2" name="Sectors">'
+            )
         )
         self.assertEqual(
             objects.diff(self.export, after),

@@ -42,7 +42,7 @@ def recolor(css: str, colors: dict[str, str]) -> str:
         new = table.get(rgb)
         if not new:
             return match.group(0)
-        parts = [int(new[i:i + 2], 16) / 255 * 100 for i in (0, 2, 4)]
+        parts = [int(new[i : i + 2], 16) / 255 * 100 for i in (0, 2, 4)]
         values = ",".join(f"{p:.4f}".rstrip("0").rstrip(".") + "%" for p in parts)
         return f"rgba({values},{match.group(4)})"
 
@@ -95,7 +95,9 @@ def replace_action(blocks: list[tuple[str, str, str]]) -> str:
     """blocks: (type, UUID, XML) for each Replace."""
     if not blocks:
         return ""
-    inner = "".join(f'\t\t\t<Replace type="{kind}" UUID="{uid}">\n{xml}\n\t\t\t</Replace>\n' for kind, uid, xml in blocks)
+    inner = "".join(
+        f'\t\t\t<Replace type="{kind}" UUID="{uid}">\n{xml}\n\t\t\t</Replace>\n' for kind, uid, xml in blocks
+    )
     return f"\t\t<ReplaceAction>\n{inner}\t\t</ReplaceAction>\n"
 
 
@@ -145,7 +147,11 @@ def field_xml(
             'notEmpty="False" unique="False" existing="False"></Validation>\n'
             f"{storage}"
         )
-    return head + body + '\t<TagList></TagList>\n\t<Annotation></Annotation>\n\t<DisplayNames enable="False"></DisplayNames>\n</Field>\n'
+    return (
+        head
+        + body
+        + '\t<TagList></TagList>\n\t<Annotation></Annotation>\n\t<DisplayNames enable="False"></DisplayNames>\n</Field>\n'
+    )
 
 
 def add_field_action(export: Export, table: str, field: str) -> str:
@@ -175,7 +181,7 @@ def image_calc(png: Path, width: int | None = None) -> str:
         try:
             from PIL import Image
         except ImportError as exc:
-            raise PatchworkError("Resizing an image needs Pillow: pip install \"filemaker-patchwork[image]\"") from exc
+            raise PatchworkError('Resizing an image needs Pillow: pip install "filemaker-patchwork[image]"') from exc
         img = Image.open(png).convert("RGBA")
         img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
         buf = io.BytesIO()

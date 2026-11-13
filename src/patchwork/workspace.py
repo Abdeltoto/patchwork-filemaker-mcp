@@ -41,7 +41,9 @@ class Workspace:
         self.root = root
         self.state_file = root / "state.json"
         if not self.state_file.is_file():
-            raise PatchworkError(f"No Patchwork workspace in {root.parent}. Start with `patchwork open file.fmp12 --account NAME`.")
+            raise PatchworkError(
+                f"No Patchwork workspace in {root.parent}. Start with `patchwork open file.fmp12 --account NAME`."
+            )
         self.state = json.loads(self.state_file.read_text(encoding="utf-8"))
         self._export: Export | None = None
 
@@ -60,8 +62,14 @@ class Workspace:
         raise PatchworkError("No Patchwork workspace here. Start with `patchwork open file.fmp12 --account NAME`.")
 
     @staticmethod
-    def create(src: Path, account: str, no_password: bool, project: Path | None = None, force: bool = False,
-               runner: Runner | None = None) -> "Workspace":
+    def create(
+        src: Path,
+        account: str,
+        no_password: bool,
+        project: Path | None = None,
+        force: bool = False,
+        runner: Runner | None = None,
+    ) -> "Workspace":
         src = require_source(src)
         project = (project or Path.cwd()).resolve()
         root = project / FOLDER
@@ -117,10 +125,16 @@ class Workspace:
 
     # ----- operations -----
 
-    def apply(self, actions: str | list[str], message: str, runner: Runner | None = None, dry_run: bool = False) -> Result:
+    def apply(
+        self, actions: str | list[str], message: str, runner: Runner | None = None, dry_run: bool = False
+    ) -> Result:
         """Apply patch actions (or a full FMUpgradeToolPatch) as a new version."""
         parts = [actions] if isinstance(actions, str) else actions
-        text = parts[0] if len(parts) == 1 and "<FMUpgradeToolPatch" in parts[0] else wrap(*parts, version=self.export.version)
+        text = (
+            parts[0]
+            if len(parts) == 1 and "<FMUpgradeToolPatch" in parts[0]
+            else wrap(*parts, version=self.export.version)
+        )
         n = self.version + 1
         patch = self.root / f"p{n:03d}.xml"
         patch.write_text(text, encoding="utf-8")

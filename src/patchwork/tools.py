@@ -183,5 +183,6 @@ class Runner:
             details = ((completed.stdout or "") + (completed.stderr or "")).strip() if self.quiet else ""
             hint = " Is the file open in FileMaker? Close it (error 803)." if "803" in details else ""
             raise PatchworkError(
-                f"{Path(command[0]).stem} failed (exit {completed.returncode}).{hint}" + (f"\n{details}" if details else "")
+                f"{Path(command[0]).stem} failed (exit {completed.returncode}).{hint}"
+                + (f"\n{details}" if details else "")
             )

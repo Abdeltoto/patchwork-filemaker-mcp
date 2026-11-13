@@ -53,13 +53,17 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"patchwork {__version__}")
-    parser.add_argument("-C", "--project", type=Path, help="Project folder holding .patchwork/ (default: search upward from here).")
+    parser.add_argument(
+        "-C", "--project", type=Path, help="Project folder holding .patchwork/ (default: search upward from here)."
+    )
     sub = parser.add_subparsers(dest="command", required=True, metavar="<command>")
 
     p = sub.add_parser("open", help="Start a working copy of a closed .fmp12 (never modified).")
     p.add_argument("source", type=Path)
     p.add_argument("--account", required=True, help="Full Access account.")
-    p.add_argument("--no-password", action="store_true", help=f"The account has no password. Otherwise {PASSWORD_ENV} is read.")
+    p.add_argument(
+        "--no-password", action="store_true", help=f"The account has no password. Otherwise {PASSWORD_ENV} is read."
+    )
     p.add_argument("--force", action="store_true", help="Replace an existing workspace.")
     p.set_defaults(func=cmd_open)
 
@@ -77,14 +81,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("table", nargs="?", default="", help="For `ls fields TABLE`.")
     p.set_defaults(func=ws_cmd(lambda ws, a: ops.list_objects(ws, a.kind, a.table)))
 
-    p = sub.add_parser("show", help="Print an object: a script as FileMaker text, anything else as XML (kind step: an example step by name).")
+    p = sub.add_parser(
+        "show",
+        help="Print an object: a script as FileMaker text, anything else as XML (kind step: an example step by name).",
+    )
     p.add_argument("kind", choices=KINDS_SHOW)
     p.add_argument("name", help="Object name; Table::Field for a field.")
     p.add_argument("--xml", action="store_true", help="A script as XML instead of text.")
     p.set_defaults(func=ws_cmd(lambda ws, a: ops.show(ws, a.kind, a.name, a.xml)))
 
     p = sub.add_parser("uses", help="What references an object, and possible mentions by name in calculations.")
-    p.add_argument("kind", choices=["layout", "script", "value-list", "custom-function", "theme", "table", "table-occurrence", "field"])
+    p.add_argument(
+        "kind",
+        choices=["layout", "script", "value-list", "custom-function", "theme", "table", "table-occurrence", "field"],
+    )
     p.add_argument("name", help="Object name; Table::Field for a field.")
     p.set_defaults(func=ws_cmd(lambda ws, a: ops.uses(ws, a.kind, a.name)))
 
@@ -102,8 +112,24 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--context", default="", help="Table occurrence of the calculation.")
     p.add_argument("--image", default="", help="Embed a PNG as a global container calculation.")
     p.add_argument("--image-width", type=int, default=0, help="Resize the PNG first (needs Pillow).")
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.add_field(ws, a.table, a.name, a.type, a.calc, a.is_global, a.comment, a.context,
-                                                         a.image, a.image_width, a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(
+            lambda ws, a: ops.add_field(
+                ws,
+                a.table,
+                a.name,
+                a.type,
+                a.calc,
+                a.is_global,
+                a.comment,
+                a.context,
+                a.image,
+                a.image_width,
+                a.message,
+                a.dry_run,
+            )
+        )
+    )
 
     p = edit(sub, "add-value-list", "Add a custom value list.")
     p.add_argument("name")
@@ -114,14 +140,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("name")
     p.add_argument("--calc", required=True)
     p.add_argument("--param", dest="params", action="append", default=[])
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.add_custom_function(ws, a.name, a.calc, a.params, a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(lambda ws, a: ops.add_custom_function(ws, a.name, a.calc, a.params, a.message, a.dry_run))
+    )
 
     p = edit(sub, "add-script", "Create a script from FileMaker script text or <Step> XML (file, or - for stdin).")
     p.add_argument("name")
     p.add_argument("steps", nargs="?", default="")
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.add_script(ws, a.name, read(a.steps) if a.steps else "", a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(lambda ws, a: ops.add_script(ws, a.name, read(a.steps) if a.steps else "", a.message, a.dry_run))
+    )
 
-    p = edit(sub, "set-steps", "Replace all steps of a script with text from `show script`, edited (file, or - for stdin).")
+    p = edit(
+        sub, "set-steps", "Replace all steps of a script with text from `show script`, edited (file, or - for stdin)."
+    )
     p.add_argument("script")
     p.add_argument("steps")
     p.set_defaults(func=ws_cmd(lambda ws, a: ops.set_steps(ws, a.script, read(a.steps), a.message, a.dry_run)))
@@ -134,10 +166,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = edit(sub, "place-field", "Put a field on a layout, copying the look and label of a field already there.")
     p.add_argument("layout")
     p.add_argument("field", help="Occurrence::Field, e.g. Clients::Status")
-    p.add_argument("--near", required=True, help="A field already on the layout. The new one goes below it (a row is inserted).")
+    p.add_argument(
+        "--near", required=True, help="A field already on the layout. The new one goes below it (a row is inserted)."
+    )
     p.add_argument("--label", default=None, help="Label text. Default: the field name.")
     p.add_argument("--side", choices=["below", "right"], default="below")
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.place_field(ws, a.layout, a.field, a.near, a.label, a.side, a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(lambda ws, a: ops.place_field(ws, a.layout, a.field, a.near, a.label, a.side, a.message, a.dry_run))
+    )
 
     p = edit(sub, "add", "Add an object from XML: value-list or custom-function.")
     p.add_argument("kind", choices=["value-list", "custom-function"])
@@ -161,16 +197,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--colors", help='JSON file or inline map {"0091CE": "2F5D50"}')
     p.add_argument("--fonts", help='JSON file or inline map {"HelveticaNeue,HelveticaNeue": "Georgia,Georgia"}')
     p.add_argument("--rename", default="")
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.retheme(ws, a.theme, ops.load_json(a.colors), ops.load_json(a.fonts), a.rename,
-                                                       a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(
+            lambda ws, a: ops.retheme(
+                ws, a.theme, ops.load_json(a.colors), ops.load_json(a.fonts), a.rename, a.message, a.dry_run
+            )
+        )
+    )
 
     p = edit(sub, "recolor-layouts", "Rewrite layouts: local colors, fonts, a field swapped everywhere.")
     p.add_argument("--colors")
     p.add_argument("--fonts")
     p.add_argument("--swap-field", nargs=2, metavar=("Table::Old", "Table::New"))
     p.add_argument("--only", nargs="+", metavar="LAYOUT")
-    p.set_defaults(func=ws_cmd(lambda ws, a: ops.recolor_layouts(ws, ops.load_json(a.colors), ops.load_json(a.fonts), a.swap_field,
-                                                               a.only, a.message, a.dry_run)))
+    p.set_defaults(
+        func=ws_cmd(
+            lambda ws, a: ops.recolor_layouts(
+                ws, ops.load_json(a.colors), ops.load_json(a.fonts), a.swap_field, a.only, a.message, a.dry_run
+            )
+        )
+    )
 
     p = edit(sub, "push", "Apply a hand-written FMUpgradeToolPatch file.")
     p.add_argument("patch")
@@ -189,7 +235,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("mcp", help="Run the MCP server (stdio) for Claude, Cursor, Codex, Antigravity.")
     p.set_defaults(func=cmd_mcp)
 
-    p = sub.add_parser("init", help="Wire a folder, new or existing, for Claude Code, Cursor, Codex and Antigravity. Never overwrites.")
+    p = sub.add_parser(
+        "init", help="Wire a folder, new or existing, for Claude Code, Cursor, Codex and Antigravity. Never overwrites."
+    )
     p.add_argument("directory", type=Path)
     p.add_argument("--name", default="")
     p.add_argument("--no-skills", action="store_true")
@@ -218,6 +266,7 @@ def ws_cmd(handler):
     def run(args: argparse.Namespace) -> int:
         print(handler(Workspace.locate(args.project), args))
         return 0
+
     return run
 
 
@@ -231,13 +280,19 @@ def read(source: str) -> str:
 
 
 def cmd_open(args: argparse.Namespace) -> int:
-    print(ops.open_file(str(args.source), args.account, args.no_password, str(args.project) if args.project else None, args.force))
+    print(
+        ops.open_file(
+            str(args.source), args.account, args.no_password, str(args.project) if args.project else None, args.force
+        )
+    )
     return 0
 
 
 def cmd_rebrand(args: argparse.Namespace) -> int:
     brand = Brand.load(args.brand)
-    report = rebrand(args.src, args.dest, brand, Runner(args.account, args.no_password, quiet=True), args.force, args.keep_work)
+    report = rebrand(
+        args.src, args.dest, brand, Runner(args.account, args.no_password, quiet=True), args.force, args.keep_work
+    )
     print(f"\nDone: {args.dest.resolve()}")
     print(f"  theme      {report.theme}")
     print(f"  layouts    {len(report.layouts)} rewritten")
@@ -283,6 +338,7 @@ def has_pillow() -> bool:
 
 
 # ----- plumbing: direct access to the Claris tools -----
+
 
 def tool_parser(sub) -> None:
     tool = sub.add_parser("tool", help="Run FMUpgradeTool / FMDeveloperTool directly, file to file.")

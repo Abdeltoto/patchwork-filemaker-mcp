@@ -25,18 +25,26 @@ from patchwork.tools import find_tool
 from patchwork.workspace import Workspace
 
 SAMPLE = os.environ.get("PATCHWORK_SAMPLE", "")
-READY = bool(SAMPLE) and Path(SAMPLE).is_file() and bool(find_tool("FMUpgradeTool")) and bool(find_tool("FMDeveloperTool"))
+READY = (
+    bool(SAMPLE) and Path(SAMPLE).is_file() and bool(find_tool("FMUpgradeTool")) and bool(find_tool("FMDeveloperTool"))
+)
 
 
-@unittest.skipUnless(READY, "set PATCHWORK_SAMPLE to a closed copy of the Claris Invoice solution, with the Claris tools installed")
+@unittest.skipUnless(
+    READY, "set PATCHWORK_SAMPLE to a closed copy of the Claris Invoice solution, with the Claris tools installed"
+)
 class RealFileTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = Path(tempfile.mkdtemp(prefix="patchwork-it-"))
         cls.source = cls.tmp / "Sample.fmp12"
         shutil.copyfile(SAMPLE, cls.source)
-        ops.open_file(str(cls.source), os.environ.get("PATCHWORK_SAMPLE_ACCOUNT", "Admin"),
-                      no_password=not os.environ.get("PATCHWORK_PASSWORD"), project=str(cls.tmp))
+        ops.open_file(
+            str(cls.source),
+            os.environ.get("PATCHWORK_SAMPLE_ACCOUNT", "Admin"),
+            no_password=not os.environ.get("PATCHWORK_PASSWORD"),
+            project=str(cls.tmp),
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -55,20 +63,28 @@ class RealFileTests(unittest.TestCase):
 
     @staticmethod
     def values(ws, name):
-        text = re.search(r"<CustomValues>\s*<Text><!\[CDATA\[([\s\S]*?)\]\]>", objects.find(ws.export, "value-list", name).xml).group(1)
+        text = re.search(
+            r"<CustomValues>\s*<Text><!\[CDATA\[([\s\S]*?)\]\]>", objects.find(ws.export, "value-list", name).xml
+        ).group(1)
         return re.split(r"\r\n|\r|\n", text)
 
     def test_fields(self):
         self.assertIn("+ field Clients::IT Note", ops.add_field(self.ws, "Clients", "IT Note", comment="integration"))
-        self.assertIn("+ field Clients::IT Upper", ops.add_field(Workspace.locate(self.tmp), "Clients", "IT Upper",
-                                                                calc="Upper ( Clients::Name )", context="Clients"))
+        self.assertIn(
+            "+ field Clients::IT Upper",
+            ops.add_field(
+                Workspace.locate(self.tmp), "Clients", "IT Upper", calc="Upper ( Clients::Name )", context="Clients"
+            ),
+        )
         self.assertIn("IT Upper\tText (calc)", ops.list_objects(Workspace.locate(self.tmp), "fields", "Clients"))
         self.assertIn("- field Clients::IT Note", ops.delete(Workspace.locate(self.tmp), "field", "Clients::IT Note"))
 
     def test_place_field_inserts_a_row(self):
         ops.add_field(self.ws, "Clients", "IT Tier")
         before = self.current().layout("Clients Details").xml
-        result = ops.place_field(Workspace.locate(self.tmp), "Clients Details", "Clients::IT Tier", "Contact Email", "Tier")
+        result = ops.place_field(
+            Workspace.locate(self.tmp), "Clients Details", "Clients::IT Tier", "Contact Email", "Tier"
+        )
         self.assertIn("~ layout Clients Details", result)
         after = self.current().layout("Clients Details").xml
         self.assertIn("<Data><![CDATA[Tier]]></Data>", after)
@@ -97,9 +113,13 @@ class RealFileTests(unittest.TestCase):
         self.assertIn("- custom-function ITGreet", ops.delete(Workspace.locate(self.tmp), "custom-function", "ITGreet"))
 
     def test_script_steps_keep_every_parameter(self):
-        dialog = (ops.show(self.ws, "step", "Show Custom Dialog")
-                  .replace('CDATA["Message"]', 'CDATA["IT Title"]', 1))
-        dialog = re.sub(r'(<Parameter type="Message">[\s\S]*?CDATA\[)[\s\S]*?(\]\]>)', r'\1"Hello " & Get ( AccountName )\2', dialog, count=1)
+        dialog = ops.show(self.ws, "step", "Show Custom Dialog").replace('CDATA["Message"]', 'CDATA["IT Title"]', 1)
+        dialog = re.sub(
+            r'(<Parameter type="Message">[\s\S]*?CDATA\[)[\s\S]*?(\]\]>)',
+            r'\1"Hello " & Get ( AccountName )\2',
+            dialog,
+            count=1,
+        )
         comment = re.sub(r'Comment value="[^"]*"', 'Comment value="IT first"', ops.show(self.ws, "step", "# (comment)"))
         self.assertIn("+ script IT Hello", ops.add_script(self.ws, "IT Hello", comment + "\n" + dialog))
         script = ops.show(Workspace.locate(self.tmp), "script", "IT Hello", xml=True)
@@ -114,35 +134,37 @@ class RealFileTests(unittest.TestCase):
         self.assertIn("- script IT Hello", ops.delete(Workspace.locate(self.tmp), "script", "IT Hello"))
 
     def test_script_text_round_trip_with_every_supported_step(self):
-        text = "\n".join([
-            "# Mark a client as Gold¶and tell the user",
-            "Set Error Capture [ On ]",
-            "Allow User Abort [ Off ]",
-            "Freeze Window",
-            'Go to Layout [ "Clients Details" ]',
-            "Set Variable [ $count ; Value: Get ( FoundCount ) ]",
-            "If [ $count = 0 ]",
-            '    Show Custom Dialog [ "Nothing to do" ; "No client in the found set." ]',
-            "    Exit Script [ Text Result: False ]",
-            "Else If [ $count > 100 ]",
-            '    Show Custom Dialog [ "Many clients" ; "Continue with " & $count & " clients?" ; Buttons: "Continue", "Cancel" ]',
-            "Else",
-            "    Beep",
-            "End If",
-            "Loop",
-            '    Set Field [ Clients::Status ; "Gold" /* tier; not a separator */ ]',
-            "    Exit Loop If [ Get ( RecordNumber ) = Get ( FoundCount ) ]",
-            "End Loop",
-            "Commit Records/Requests [ Skip data entry validation: Off ; With dialog: Off ; Force Commit: Off ]",
-            "Refresh Window [ Flush cached join results: On ; Flush cached external data: Off ]",
-            'Perform Script [ "Sort Clients" ; Parameter: "gold" ]',
-            "New Record/Request",
-            "Delete Record/Request [ With dialog: Off ]",
-            "Show All Records",
-            "Go to Layout [ original layout ]",
-            "// Close Window [ Current Window ]",
-            "Halt Script",
-        ])
+        text = "\n".join(
+            [
+                "# Mark a client as Gold¶and tell the user",
+                "Set Error Capture [ On ]",
+                "Allow User Abort [ Off ]",
+                "Freeze Window",
+                'Go to Layout [ "Clients Details" ]',
+                "Set Variable [ $count ; Value: Get ( FoundCount ) ]",
+                "If [ $count = 0 ]",
+                '    Show Custom Dialog [ "Nothing to do" ; "No client in the found set." ]',
+                "    Exit Script [ Text Result: False ]",
+                "Else If [ $count > 100 ]",
+                '    Show Custom Dialog [ "Many clients" ; "Continue with " & $count & " clients?" ; Buttons: "Continue", "Cancel" ]',
+                "Else",
+                "    Beep",
+                "End If",
+                "Loop",
+                '    Set Field [ Clients::Status ; "Gold" /* tier; not a separator */ ]',
+                "    Exit Loop If [ Get ( RecordNumber ) = Get ( FoundCount ) ]",
+                "End Loop",
+                "Commit Records/Requests [ Skip data entry validation: Off ; With dialog: Off ; Force Commit: Off ]",
+                "Refresh Window [ Flush cached join results: On ; Flush cached external data: Off ]",
+                'Perform Script [ "Sort Clients" ; Parameter: "gold" ]',
+                "New Record/Request",
+                "Delete Record/Request [ With dialog: Off ]",
+                "Show All Records",
+                "Go to Layout [ original layout ]",
+                "// Close Window [ Current Window ]",
+                "Halt Script",
+            ]
+        )
         self.assertIn("+ script IT Text", ops.add_script(self.ws, "IT Text", text))
         shown = ops.show(Workspace.locate(self.tmp), "script", "IT Text")
         self.assertEqual(shown, text)
@@ -170,8 +192,10 @@ class RealFileTests(unittest.TestCase):
         obj = re.search(r'<LayoutObject [^>]*type="Text"[\s\S]*?</LayoutObject>', layout).group(0)
         uuid = re.search(r"<UUID[^>]*>([^<]+)</UUID>", obj).group(1)
         moved = re.sub(r'top="(\d+)', lambda m: f'top="{int(m.group(1)) + 1}', obj, count=1)
-        patch = wrap(f'\t\t<ReplaceAction>\n\t\t\t<Replace type="LayoutObject" UUID="{uuid}">\n{moved}\n\t\t\t</Replace>\n\t\t</ReplaceAction>\n',
-                     version=self.ws.export.version)
+        patch = wrap(
+            f'\t\t<ReplaceAction>\n\t\t\t<Replace type="LayoutObject" UUID="{uuid}">\n{moved}\n\t\t\t</Replace>\n\t\t</ReplaceAction>\n',
+            version=self.ws.export.version,
+        )
         with self.assertRaises(PatchworkError) as caught:
             ops.push(self.ws, patch)
         self.assertIn("did not change", str(caught.exception))
@@ -190,10 +214,18 @@ class RealFileTests(unittest.TestCase):
     def test_mcp_round_trip(self):
         calls = [
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}},
-            {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "patchwork_add_value_list",
-                                                                          "arguments": {"name": "IT MCP", "values": ["X", "Y"]}}},
-            {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "patchwork_delete",
-                                                                          "arguments": {"kind": "layout", "name": "Dashboard"}}},
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {"name": "patchwork_add_value_list", "arguments": {"name": "IT MCP", "values": ["X", "Y"]}},
+            },
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {"name": "patchwork_delete", "arguments": {"kind": "layout", "name": "Dashboard"}},
+            },
         ]
         out = io.StringIO()
         serve(self.tmp, io.StringIO("".join(json.dumps(c) + "\n" for c in calls)), out)

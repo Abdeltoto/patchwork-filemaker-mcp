@@ -32,12 +32,36 @@ KINDS = {
     for k in (
         Kind("layout", "layouts", "LayoutCatalog", "Layout", "LayoutReference", can_replace=True, can_delete=True),
         Kind("script", "scripts", "ScriptCatalog", "Script", "ScriptReference", can_add=True, can_delete=True),
-        Kind("value-list", "value-lists", "ValueListCatalog", "ValueList", "ValueListReference", can_add=True, can_replace=True, can_delete=True),
-        Kind("custom-function", "custom-functions", "CustomFunctionsCatalog", "CustomFunction", "CustomFunctionReference",
-             can_add=True, can_replace=True, can_delete=True, object_list=True),
+        Kind(
+            "value-list",
+            "value-lists",
+            "ValueListCatalog",
+            "ValueList",
+            "ValueListReference",
+            can_add=True,
+            can_replace=True,
+            can_delete=True,
+        ),
+        Kind(
+            "custom-function",
+            "custom-functions",
+            "CustomFunctionsCatalog",
+            "CustomFunction",
+            "CustomFunctionReference",
+            can_add=True,
+            can_replace=True,
+            can_delete=True,
+            object_list=True,
+        ),
         Kind("theme", "themes", "ThemeCatalog", "Theme", "LayoutThemeReference", can_replace=True),
         Kind("table", "tables", "BaseTableCatalog", "BaseTable", "BaseTableReference"),
-        Kind("table-occurrence", "table-occurrences", "TableOccurrenceCatalog", "TableOccurrence", "TableOccurrenceReference"),
+        Kind(
+            "table-occurrence",
+            "table-occurrences",
+            "TableOccurrenceCatalog",
+            "TableOccurrence",
+            "TableOccurrenceReference",
+        ),
     )
 }
 PLURALS = {k.plural: k for k in KINDS.values()}
@@ -62,8 +86,10 @@ def kind(name: str) -> Kind:
 def items(export: Export, kind_name: str) -> list[Item]:
     k = kind(kind_name)
     if k.name == "theme":
-        return [Item("theme", "", display or internal, uid, export.theme(internal or display).xml if uid else "")
-                for display, internal, uid in export.themes()]
+        return [
+            Item("theme", "", display or internal, uid, export.theme(internal or display).xml if uid else "")
+            for display, internal, uid in export.themes()
+        ]
     try:
         section = export.section(k.catalog)
     except PatchworkError:
@@ -111,6 +137,7 @@ def next_id(export: Export, k: Kind) -> int:
 
 # ---------- show ----------
 
+
 def script_steps(export: Export, name: str) -> tuple[str, str]:
     """(ScriptReference tag, steps XML) of a script."""
     script = find(export, "script", name)
@@ -120,7 +147,9 @@ def script_steps(export: Export, name: str) -> tuple[str, str]:
         steps,
     )
     if not match:
-        reference = f'<ScriptReference id="{script.id}" name="{escape(script.name)}" UUID="{script.uuid}"></ScriptReference>'
+        reference = (
+            f'<ScriptReference id="{script.id}" name="{escape(script.name)}" UUID="{script.uuid}"></ScriptReference>'
+        )
         return reference, ""
     return match.group(1), match.group(2) or ""
 
@@ -134,7 +163,9 @@ def show(export: Export, kind_name: str, name: str) -> str:
             raise PatchworkError(f"Field not found: {name}")
         return dedent(match.group(0))
     if kind_name == "step":
-        match = re.search(rf'<Step [^>]*name="{re.escape(escape(name))}"[\s\S]*?</Step>', export.section("StepsForScripts"))
+        match = re.search(
+            rf'<Step [^>]*name="{re.escape(escape(name))}"[\s\S]*?</Step>', export.section("StepsForScripts")
+        )
         if not match:
             raise PatchworkError(f"No script in this file uses the step {name!r}. Look at another file for an example.")
         return dedent(match.group(0))
@@ -154,6 +185,7 @@ def dedent(xml: str) -> str:
 
 # ---------- builders ----------
 
+
 def new_uuid() -> str:
     return str(uuid.uuid4()).upper()
 
@@ -165,7 +197,9 @@ def fresh_uuids(xml: str) -> str:
 def parse_steps(xml: str, start: int = 0) -> list[str]:
     steps = re.findall(r"<Step\b[\s\S]*?</Step>", xml)
     if not steps:
-        raise PatchworkError("No <Step> element found. Use `patchwork show script NAME` or `show step NAME` for examples.")
+        raise PatchworkError(
+            "No <Step> element found. Use `patchwork show script NAME` or `show step NAME` for examples."
+        )
     out = []
     for offset, step in enumerate(steps):
         head_end = step.index(">")
@@ -216,7 +250,8 @@ def set_steps(export: Export, script: str, steps_xml: str) -> str:
     reference, existing = script_steps(export, script)
     old = re.findall(r"<Step [^>]*>\s*<UUID[^>]*>([^<]+)</UUID>", existing)
     deletes = "".join(
-        f'\t\t\t<ItemReference UUID="{uid}" type="ScriptStepReference">\n\t\t\t\t{reference}\n\t\t\t</ItemReference>\n' for uid in old
+        f'\t\t\t<ItemReference UUID="{uid}" type="ScriptStepReference">\n\t\t\t\t{reference}\n\t\t\t</ItemReference>\n'
+        for uid in old
     )
     delete = f"\t\t<DeleteAction>\n{deletes}\t\t</DeleteAction>\n" if old else ""
     return delete + "\t\t<AddAction>\n" + steps_action(reference, parse_steps(steps_xml)) + "\t\t</AddAction>\n"
@@ -225,7 +260,9 @@ def set_steps(export: Export, script: str, steps_xml: str) -> str:
 def add_object(export: Export, kind_name: str, xml: str) -> str:
     k = kind(kind_name)
     if not k.can_add or k.name == "script":
-        raise PatchworkError(f"Adding a {k.name} this way is not supported." + (" Use add-script." if k.name == "script" else ""))
+        raise PatchworkError(
+            f"Adding a {k.name} this way is not supported." + (" Use add-script." if k.name == "script" else "")
+        )
     block = re.search(rf"<{k.tag}\b[\s\S]*</{k.tag}>", xml)
     if not block:
         raise PatchworkError(f"Expected a <{k.tag}> element. Use `patchwork show {k.name} NAME` for an example.")
@@ -268,9 +305,11 @@ def custom_function_xml(name: str, params: list[str], calc: str) -> str:
     display = f"{name} ( {' ; '.join(params)} )" if params else name
     parameters = ""
     if params:
-        parameters = (f'\t<ObjectList membercount="{len(params)}">\n'
-                      + "".join(f'\t\t<Parameter name="{escape(p)}"></Parameter>\n' for p in params)
-                      + "\t</ObjectList>\n")
+        parameters = (
+            f'\t<ObjectList membercount="{len(params)}">\n'
+            + "".join(f'\t\t<Parameter name="{escape(p)}"></Parameter>\n' for p in params)
+            + "\t</ObjectList>\n"
+        )
     return (
         f'<CustomFunction name="{escape(name)}" access="All">\n'
         f"\t<Calculation>\n\t\t<Text><![CDATA[{calc}]]></Text>\n\t</Calculation>\n"
@@ -281,7 +320,9 @@ def custom_function_xml(name: str, params: list[str], calc: str) -> str:
 def replace_object(export: Export, kind_name: str, name: str, xml: str) -> str:
     k = kind(kind_name)
     if not k.can_replace:
-        raise PatchworkError(f"Replacing a {k.name} is not supported. Supported: {', '.join(n for n, v in KINDS.items() if v.can_replace)}.")
+        raise PatchworkError(
+            f"Replacing a {k.name} is not supported. Supported: {', '.join(n for n, v in KINDS.items() if v.can_replace)}."
+        )
     item = find(export, k.name, name)
     block = re.search(rf"<{k.tag}\b[\s\S]*</{k.tag}>", xml)
     if not block:
@@ -316,6 +357,7 @@ def split_field(qualified: str) -> tuple[str, str]:
 
 # ---------- diff ----------
 
+
 def normalize(text: str) -> str:
     text = re.sub(r"<FMSaveAsXML[^>]*>", "", text, count=1)
     return re.sub(r"<UUID [^>]*>", "<UUID>", text)
@@ -338,7 +380,9 @@ def inventory(export: Export) -> dict[tuple[str, str], str]:
         for catalog in re.finditer(r"<FieldCatalog>[\s\S]*?</FieldCatalog>", fields):
             table = re.search(r'<BaseTableReference id="\d+" name="([^"]*)"', catalog.group(0))
             for field in re.finditer(r'<Field id="\d+" name="([^"]*)"[\s\S]*?</Field>', catalog.group(0)):
-                found[("field", f"{unescape(table.group(1)) if table else '?'}::{unescape(field.group(1))}")] = normalize(field.group(0))
+                found[("field", f"{unescape(table.group(1)) if table else '?'}::{unescape(field.group(1))}")] = (
+                    normalize(field.group(0))
+                )
     except PatchworkError:
         pass
     return found

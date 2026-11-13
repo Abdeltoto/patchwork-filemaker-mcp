@@ -39,7 +39,9 @@ class ScriptTextTests(unittest.TestCase):
     def test_dialog_buttons_and_options_bits(self):
         line = 'Show Custom Dialog [ "Title" ; "Sure?" ; Buttons: "Yes, go", "No" ]'
         self.assertEqual(self.round_trip(line), line)
-        commit = script.build(self.export, "Commit Records/Requests [ Skip data entry validation: On ; With dialog: Off ]")
+        commit = script.build(
+            self.export, "Commit Records/Requests [ Skip data entry validation: On ; With dialog: Off ]"
+        )
         self.assertIn("<Options>384</Options>", commit)
 
     def test_disabled_step_and_multiline_comment(self):
@@ -50,9 +52,11 @@ class ScriptTextTests(unittest.TestCase):
         self.assertEqual(script.to_text(xml), text)
 
     def test_unknown_step_is_reused_when_unchanged(self):
-        existing = ('<Step id="999" name="Sort Records" enable="True"><UUID>S</UUID><Options>0</Options>'
-                    '<ParameterValues membercount="1"><Parameter type="Boolean"><Boolean type="With dialog" id="128" value="False">'
-                    "</Boolean></Parameter></ParameterValues></Step>")
+        existing = (
+            '<Step id="999" name="Sort Records" enable="True"><UUID>S</UUID><Options>0</Options>'
+            '<ParameterValues membercount="1"><Parameter type="Boolean"><Boolean type="With dialog" id="128" value="False">'
+            "</Boolean></Parameter></ParameterValues></Step>"
+        )
         line = script.render(existing)
         self.assertEqual(line, "Sort Records [ With dialog: Off ]")
         self.assertIn('id="999"', script.build(self.export, f"Beep\n{line}", existing))

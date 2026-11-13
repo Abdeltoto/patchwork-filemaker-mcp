@@ -38,7 +38,11 @@ class FakeRunner:
             end = self.text.index("</ObjectList>", fields)
             self.text = self.text[:end] + field + self.text[end:]
         if 'type="Layout"' in xml:
-            self.text = re.sub(r'<FieldReference id="24" name="Logo"( repetition="1")? UUID="LOGO-UUID">', r'<FieldReference id="41" name="Brand Logo"\1 UUID="BRAND-UUID">', self.text)
+            self.text = re.sub(
+                r'<FieldReference id="24" name="Logo"( repetition="1")? UUID="LOGO-UUID">',
+                r'<FieldReference id="41" name="Brand Logo"\1 UUID="BRAND-UUID">',
+                self.text,
+            )
         shutil.copyfile(src, dest)
 
 

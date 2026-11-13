@@ -70,8 +70,15 @@ def server_command() -> tuple[str, list[str]]:
 def mcp_configs(root: Path) -> dict[str, str]:
     command, prefix = server_command()
     server = {"command": command, "args": [*prefix, "mcp"]}
-    cursor = {"mcpServers": {"patchwork": {**server, "args": [*prefix, "-C", "${workspaceFolder}", "mcp"],
-                                           "env": {"PATCHWORK_PASSWORD": "${env:PATCHWORK_PASSWORD}"}}}}
+    cursor = {
+        "mcpServers": {
+            "patchwork": {
+                **server,
+                "args": [*prefix, "-C", "${workspaceFolder}", "mcp"],
+                "env": {"PATCHWORK_PASSWORD": "${env:PATCHWORK_PASSWORD}"},
+            }
+        }
+    }
     claude = {"mcpServers": {"patchwork": {**server, "env": {"PATCHWORK_PASSWORD": "${PATCHWORK_PASSWORD:-}"}}}}
     antigravity = {"mcpServers": {"patchwork": {**server, "cwd": str(root)}}}
     codex = (

@@ -95,7 +95,8 @@ class Export:
         """(catalog UUID, BaseTableReference tag, catalog XML) for a base table."""
         fields = self.section("FieldsForTables")
         ref = re.search(
-            rf'<BaseTableReference id="\d+" name="{re.escape(escape(table))}" UUID="[^"]+"></BaseTableReference>', fields
+            rf'<BaseTableReference id="\d+" name="{re.escape(escape(table))}" UUID="[^"]+"></BaseTableReference>',
+            fields,
         )
         if not ref:
             raise PatchworkError(f"Base table not found: {table}")

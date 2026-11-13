@@ -41,7 +41,9 @@ def add_value_list_effect(patch, text):
 
 
 def empty_value_list_effect(patch, text):
-    return text.replace("</ValueListCatalog>", '<ValueList id="3" name="Status">\n<UUID>NEW</UUID>\n</ValueList>\n</ValueListCatalog>')
+    return text.replace(
+        "</ValueListCatalog>", '<ValueList id="3" name="Status">\n<UUID>NEW</UUID>\n</ValueList>\n</ValueListCatalog>'
+    )
 
 
 class WorkspaceTests(unittest.TestCase):
@@ -131,12 +133,21 @@ class McpTests(unittest.TestCase):
         self.assertEqual(len(replies), 2)
         self.assertEqual(replies[0]["result"]["serverInfo"]["name"], "patchwork")
         names = {t["name"] for t in replies[1]["result"]["tools"]}
-        self.assertTrue({"patchwork_open", "patchwork_show", "patchwork_add_script", "patchwork_undo", "patchwork_save"} <= names)
+        self.assertTrue(
+            {"patchwork_open", "patchwork_show", "patchwork_add_script", "patchwork_undo", "patchwork_save"} <= names
+        )
 
     def test_errors_come_back_as_tool_errors(self):
         with tempfile.TemporaryDirectory() as tmp:
-            reply = self.converse({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
-                                   "params": {"name": "patchwork_status", "arguments": {}}}, project=Path(tmp))[0]
+            reply = self.converse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {"name": "patchwork_status", "arguments": {}},
+                },
+                project=Path(tmp),
+            )[0]
         self.assertTrue(reply["result"]["isError"])
         self.assertIn("patchwork open", reply["result"]["content"][0]["text"])
 
@@ -147,7 +158,14 @@ class McpTests(unittest.TestCase):
     def test_tools_that_can_lose_work_are_marked_destructive(self):
         reply = self.converse({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})[0]
         annotations = {t["name"]: t["annotations"] for t in reply["result"]["tools"]}
-        destructive = {"patchwork_open", "patchwork_delete", "patchwork_undo", "patchwork_save", "patchwork_push", "patchwork_replace"}
+        destructive = {
+            "patchwork_open",
+            "patchwork_delete",
+            "patchwork_undo",
+            "patchwork_save",
+            "patchwork_push",
+            "patchwork_replace",
+        }
         for name, hints in annotations.items():
             self.assertEqual(hints["destructiveHint"], name in destructive, name)
 
@@ -162,16 +180,33 @@ class McpTests(unittest.TestCase):
             src = project / "App.fmp12"
             src.write_bytes(b"fmp12")
             Workspace.create(src, "Admin", True, project, runner=FakeTool())
+
             def call(ident, name, arguments):
-                return {"jsonrpc": "2.0", "id": ident, "method": "tools/call", "params": {"name": name, "arguments": arguments}}
+                return {
+                    "jsonrpc": "2.0",
+                    "id": ident,
+                    "method": "tools/call",
+                    "params": {"name": name, "arguments": arguments},
+                }
+
             env = {k: v for k, v in os.environ.items() if k != "PATCHWORK_ALLOW_OUTSIDE"}
             with mock.patch.dict(os.environ, env, clear=True):
                 replies = self.converse(
                     call(1, "patchwork_save", {"dest": str(other), "force": True}),
-                    call(2, "patchwork_open", {"source": str(other), "account": "Admin", "no_password": True,
-                                               "project": str(outside), "force": True}),
+                    call(
+                        2,
+                        "patchwork_open",
+                        {
+                            "source": str(other),
+                            "account": "Admin",
+                            "no_password": True,
+                            "project": str(outside),
+                            "force": True,
+                        },
+                    ),
                     call(3, "patchwork_save", {"dest": str(project / "Saved.fmp12"), "force": True}),
-                    project=project)
+                    project=project,
+                )
             self.assertIn("outside the project folder", replies[0]["result"]["content"][0]["text"])
             self.assertEqual(other.read_bytes(), b"other client")
             self.assertIn("outside the project folder", replies[1]["result"]["content"][0]["text"])

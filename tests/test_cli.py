@@ -39,8 +39,13 @@ class CliTests(unittest.TestCase):
             cursor = json.loads((target / ".cursor" / "mcp.json").read_text(encoding="utf-8"))
             self.assertEqual(cursor["mcpServers"]["patchwork"]["args"][-3:], ["-C", "${workspaceFolder}", "mcp"])
             self.assertIn("patchwork", json.loads((target / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"])
-            self.assertIn("patchwork", json.loads((target / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))["mcpServers"])
-            self.assertIn('env_vars = ["PATCHWORK_PASSWORD"]', (target / ".codex" / "config.toml").read_text(encoding="utf-8"))
+            self.assertIn(
+                "patchwork",
+                json.loads((target / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))["mcpServers"],
+            )
+            self.assertIn(
+                'env_vars = ["PATCHWORK_PASSWORD"]', (target / ".codex" / "config.toml").read_text(encoding="utf-8")
+            )
             self.assertIn(".patchwork/", (target / ".gitignore").read_text(encoding="utf-8"))
 
     def test_init_on_an_existing_folder_keeps_its_files(self):
@@ -59,7 +64,9 @@ class CliTests(unittest.TestCase):
             server = json.loads((Path(tmp) / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]["patchwork"]
             self.assertEqual(server["command"], sys.executable)
             self.assertEqual(server["args"], ["-m", "patchwork", "mcp"])
-            self.assertIn('args = ["-m", "patchwork", "mcp"]', (Path(tmp) / ".codex" / "config.toml").read_text(encoding="utf-8"))
+            self.assertIn(
+                'args = ["-m", "patchwork", "mcp"]', (Path(tmp) / ".codex" / "config.toml").read_text(encoding="utf-8")
+            )
 
     def test_help_lists_the_editing_commands(self):
         out = io.StringIO()

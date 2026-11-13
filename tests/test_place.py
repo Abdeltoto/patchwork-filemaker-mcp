@@ -10,6 +10,7 @@ from patchwork.place import own_bounds, top_level
 
 def placed(**kwargs):
     from patchwork.place import place_field
+
     export = Export.load(FIXTURES / "layout-export.xml")
     args = {"layout": "Clients Details", "field": "Clients::Loyalty Tier", "near": "Email"} | kwargs
     xml, _ = place_field(export, **args)
@@ -29,8 +30,10 @@ def tops(xml: str) -> dict[str, float]:
 class PlaceFieldTests(unittest.TestCase):
     def test_inserts_a_row_below_with_a_copied_label(self):
         xml = placed(label="Tier")
-        self.assertEqual(tops(xml), {"Rectangle": 0, "Email": 40, "Tier": 70, "Loyalty Tier": 90, "Notes": 120,
-                                     "Side note": 20, "Text": 360})
+        self.assertEqual(
+            tops(xml),
+            {"Rectangle": 0, "Email": 40, "Tier": 70, "Loyalty Tier": 90, "Notes": 120, "Side note": 20, "Text": 360},
+        )
         self.assertIn('size="350" absolute="0"', xml)
         self.assertIn('size="50" absolute="350"', xml)
         self.assertIn('<ObjectList membercount="7">', xml)
@@ -42,7 +45,9 @@ class PlaceFieldTests(unittest.TestCase):
 
     def test_new_field_points_at_its_new_label_with_fresh_ids(self):
         xml = placed()
-        field = re.search(r'<LayoutObject id="(\d+)"[^>]*>(?:(?!</LayoutObject>)[\s\S])*?TIER-UUID[\s\S]*?</LayoutObject>', xml).group(0)
+        field = re.search(
+            r'<LayoutObject id="(\d+)"[^>]*>(?:(?!</LayoutObject>)[\s\S])*?TIER-UUID[\s\S]*?</LayoutObject>', xml
+        ).group(0)
         label = re.search(r'<LayoutObject id="(\d+)"[^>]*>(?:(?!</LayoutObject>)[\s\S])*?CDATA\[Loyalty Tier\]', xml)
         self.assertIn(f"<Label>{label.group(1)}</Label>", field)
         self.assertNotIn("TabOrder", field)
