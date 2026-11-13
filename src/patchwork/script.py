@@ -385,170 +385,182 @@ def unquote(text: str) -> str:
     return text
 
 
-def build_step(export: Export, name: str, params: list[str], enabled: bool) -> str:
-    def need(count: int) -> None:
-        if len(params) < count:
-            raise PatchworkError(f"{name} needs {count} parameter(s) in [ ... ], got {len(params)}.")
+def need(name: str, params: list[str], count: int) -> None:
+    if len(params) < count:
+        raise PatchworkError(f"{name} needs {count} parameter(s) in [ ... ], got {len(params)}.")
 
-    if name == "# (comment)":
-        text = params[0].replace("¶", "\r") if params else ""
-        value = f' value="{escape(text).replace(chr(13), "&#13;")}"' if text else ""
-        return step_xml(
-            name, 4 if text else 0, [f'<Parameter type="Comment"><Comment{value}></Comment></Parameter>'], enabled
+
+Built = tuple[int, list[str]]
+
+
+def build_comment(export: Export, name: str, params: list[str]) -> Built:
+    text = params[0].replace("¶", "\r") if params else ""
+    value = f' value="{escape(text).replace(chr(13), "&#13;")}"' if text else ""
+    return 4 if text else 0, [f'<Parameter type="Comment"><Comment{value}></Comment></Parameter>']
+
+
+def build_set_field(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 2)
+    return 16385, [
+        target_field(export, params[0]),
+        f'<Parameter type="Calculation">{calc_xml(params[1], 0)}</Parameter>',
+    ]
+
+
+def build_set_variable(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 2)
+    match = re.fullmatch(r"(\$\$?[^\[\s]+)(?:\[(.+)\])?", params[0].strip())
+    if not match:
+        raise PatchworkError(f"Set Variable needs a $name or $$name, got: {params[0]}")
+    given = labelled(params[1:], "Value")
+    value = params[1] if given is None else given
+    return 16388, [
+        f'<Parameter type="Variable"><value>{calc_xml(value, 1)}</value><Name value="{escape(match.group(1))}"></Name>'
+        f"<repetition>{calc_xml(match.group(2) or '1', 2)}</repetition></Parameter>"
+    ]
+
+
+def build_if(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 1)
+    return 16384, [COLLAPSED, f'<Parameter type="Calculation">{calc_xml(params[0], 0, 7)}</Parameter>']
+
+
+def build_exit_loop_if(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 1)
+    return 16384, [f'<Parameter type="Calculation">{calc_xml(params[0], 0, 7)}</Parameter>']
+
+
+def build_go_to_layout(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 1)
+    if params[0].strip().lower() == "original layout":
+        container = '<LayoutReferenceContainer value="1"><Label>original layout</Label></LayoutReferenceContainer>'
+        options = 0
+    else:
+        layout = objects.find(export, "layout", unquote(params[0]))
+        container = (
+            f'<LayoutReferenceContainer value="5"><LayoutReference id="{layout.id}" name="{escape(layout.name)}" '
+            f'UUID="{layout.uuid}"></LayoutReference></LayoutReferenceContainer>'
         )
-    if name == "Set Field":
-        need(2)
-        return step_xml(
-            name,
-            16385,
-            [target_field(export, params[0]), f'<Parameter type="Calculation">{calc_xml(params[1], 0)}</Parameter>'],
-            enabled,
+        options = 8
+    return options, [
+        f'<Parameter type="LayoutReferenceContainer">{container}</Parameter>',
+        '<Parameter type="Animation"><Animation name="None" value="0"></Animation></Parameter>',
+    ]
+
+
+def build_perform_script(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 1)
+    script = objects.find(export, "script", unquote(params[0]))
+    parameter = labelled(params[1:], "Parameter")
+    inner = calc_xml(parameter, 0) if parameter else ""
+    return 16448 if parameter else 64, [
+        f'<Parameter type="List"><List name="From list" value="1"><ScriptReference id="{script.id}" name="{escape(script.name)}" '
+        f'UUID="{script.uuid}"></ScriptReference></List></Parameter>',
+        f'<Parameter type="Parameter"><Parameter>{inner}</Parameter></Parameter>',
+    ]
+
+
+def build_dialog(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 2)
+    buttons = labelled(params[2:], "Buttons")
+    labels = re.findall(r'"([^"]*)"', buttons) if buttons else ["OK"]
+    if len(labels) > 3:
+        raise PatchworkError("Show Custom Dialog has at most 3 buttons.")
+    labels += [""] * (3 - len(labels))
+    button_xml = "".join(
+        f'<Parameter type="Button{i + 1}"{" value=" + chr(34) + escape(b) + chr(34) if b else ""}>'
+        f'<Boolean type="Commit" value="{i == 0}"></Boolean></Parameter>'
+        for i, b in enumerate(labels)
+    )
+    return 16388, [
+        f'<Parameter type="Title">{calc_xml(params[0], 0)}</Parameter>',
+        f'<Parameter type="Message">{calc_xml(params[1], 1)}</Parameter>',
+        button_xml,
+    ]
+
+
+def build_exit_script(export: Export, name: str, params: list[str]) -> Built:
+    result = labelled(params, "Text Result")
+    result = params[0] if result is None and params else result
+    if not result:
+        return 0, []
+    return 16384, [f'<Parameter type="Calculation">{calc_xml(result, 0)}</Parameter>']
+
+
+def build_commit_or_delete(export: Export, name: str, params: list[str]) -> Built:
+    dialog = on(labelled(params, "With dialog"), True)
+    options = 0 if dialog else WITH_DIALOG
+    values = [boolean("With dialog", WITH_DIALOG, dialog)]
+    if name == "Commit Records/Requests":
+        skip, force = (
+            on(labelled(params, "Skip data entry validation"), False),
+            on(labelled(params, "Force Commit"), False),
         )
-    if name == "Set Variable":
-        need(2)
-        match = re.fullmatch(r"(\$\$?[^\[\s]+)(?:\[(.+)\])?", params[0].strip())
-        if not match:
-            raise PatchworkError(f"Set Variable needs a $name or $$name, got: {params[0]}")
-        given = labelled(params[1:], "Value")
-        value = params[1] if given is None else given
-        return step_xml(
-            name,
-            16388,
-            [
-                f'<Parameter type="Variable"><value>{calc_xml(value, 1)}</value><Name value="{escape(match.group(1))}"></Name>'
-                f"<repetition>{calc_xml(match.group(2) or '1', 2)}</repetition></Parameter>"
-            ],
-            enabled,
-        )
-    if name in ("If", "Else If"):
-        need(1)
-        return step_xml(
-            name, 16384, [COLLAPSED, f'<Parameter type="Calculation">{calc_xml(params[0], 0, 7)}</Parameter>'], enabled
-        )
-    if name == "Exit Loop If":
-        need(1)
-        return step_xml(
-            name, 16384, [f'<Parameter type="Calculation">{calc_xml(params[0], 0, 7)}</Parameter>'], enabled
-        )
-    if name == "Else":
-        return step_xml(name, 0, [COLLAPSED, COLLAPSED], enabled)
-    if name == "Loop":
-        return step_xml(
-            name, 0, [COLLAPSED, '<Parameter type="List"><List name="Always" value="1"></List></Parameter>'], enabled
-        )
-    if name == "Go to Layout":
-        need(1)
-        if params[0].strip().lower() == "original layout":
-            container = '<LayoutReferenceContainer value="1"><Label>original layout</Label></LayoutReferenceContainer>'
-            options = 0
-        else:
-            layout = objects.find(export, "layout", unquote(params[0]))
-            container = (
-                f'<LayoutReferenceContainer value="5"><LayoutReference id="{layout.id}" name="{escape(layout.name)}" '
-                f'UUID="{layout.uuid}"></LayoutReference></LayoutReferenceContainer>'
-            )
-            options = 8
-        return step_xml(
-            name,
-            options,
-            [
-                f'<Parameter type="LayoutReferenceContainer">{container}</Parameter>',
-                '<Parameter type="Animation"><Animation name="None" value="0"></Animation></Parameter>',
-            ],
-            enabled,
-        )
-    if name == "Perform Script":
-        need(1)
-        script = objects.find(export, "script", unquote(params[0]))
-        parameter = labelled(params[1:], "Parameter")
-        inner = calc_xml(parameter, 0) if parameter else ""
-        return step_xml(
-            name,
-            16448 if parameter else 64,
-            [
-                f'<Parameter type="List"><List name="From list" value="1"><ScriptReference id="{script.id}" name="{escape(script.name)}" '
-                f'UUID="{script.uuid}"></ScriptReference></List></Parameter>',
-                f'<Parameter type="Parameter"><Parameter>{inner}</Parameter></Parameter>',
-            ],
-            enabled,
-        )
-    if name == "Show Custom Dialog":
-        need(2)
-        buttons = labelled(params[2:], "Buttons")
-        labels = re.findall(r'"([^"]*)"', buttons) if buttons else ["OK"]
-        if len(labels) > 3:
-            raise PatchworkError("Show Custom Dialog has at most 3 buttons.")
-        labels += [""] * (3 - len(labels))
-        button_xml = "".join(
-            f'<Parameter type="Button{i + 1}"{" value=" + chr(34) + escape(b) + chr(34) if b else ""}>'
-            f'<Boolean type="Commit" value="{i == 0}"></Boolean></Parameter>'
-            for i, b in enumerate(labels)
-        )
-        return step_xml(
-            name,
-            16388,
-            [
-                f'<Parameter type="Title">{calc_xml(params[0], 0)}</Parameter>',
-                f'<Parameter type="Message">{calc_xml(params[1], 1)}</Parameter>',
-                button_xml,
-            ],
-            enabled,
-        )
-    if name == "Exit Script":
-        result = labelled(params, "Text Result")
-        result = params[0] if result is None and params else result
-        if not result:
-            return step_xml(name, 0, enabled=enabled)
-        return step_xml(name, 16384, [f'<Parameter type="Calculation">{calc_xml(result, 0)}</Parameter>'], enabled)
-    if name in ("Commit Records/Requests", "Delete Record/Request"):
-        dialog = on(labelled(params, "With dialog"), True)
-        options = 0 if dialog else WITH_DIALOG
-        values = [boolean("With dialog", WITH_DIALOG, dialog)]
-        if name == "Commit Records/Requests":
-            skip, force = (
-                on(labelled(params, "Skip data entry validation"), False),
-                on(labelled(params, "Force Commit"), False),
-            )
-            options += SKIP_VALIDATION * skip + FORCE_COMMIT * force
-            values = [
-                boolean("Skip data entry validation", SKIP_VALIDATION, skip),
-                *values,
-                boolean("Force Commit", FORCE_COMMIT, force),
-            ]
+        options += SKIP_VALIDATION * skip + FORCE_COMMIT * force
+        values = [
+            boolean("Skip data entry validation", SKIP_VALIDATION, skip),
+            *values,
+            boolean("Force Commit", FORCE_COMMIT, force),
+        ]
+    return options, values
+
+
+def build_switch(export: Export, name: str, params: list[str]) -> Built:
+    need(name, params, 1)
+    flag = on(params[0], True)
+    return 196608 if flag else 65536, [
+        f'<Parameter type="Boolean"><Boolean id="131072" value="{flag}"></Boolean></Parameter>'
+    ]
+
+
+def build_refresh_window(export: Export, name: str, params: list[str]) -> Built:
+    join, external = (
+        on(labelled(params, "Flush cached join results"), False),
+        on(labelled(params, "Flush cached external data"), False),
+    )
+    return FLUSH_JOINS * join + FLUSH_EXTERNAL * external, [
+        boolean("Flush cached join results", FLUSH_JOINS, join),
+        boolean("Flush cached external data", FLUSH_EXTERNAL, external),
+    ]
+
+
+def build_close_window(export: Export, name: str, params: list[str]) -> Built:
+    return -2147483648, [
+        '<Parameter type="WindowReference"><WindowReference><Select kind="0" type="current">'
+        "</Select></WindowReference></Parameter>"
+    ]
+
+
+BUILDERS: dict[str, Callable[[Export, str, list[str]], Built]] = {
+    "# (comment)": build_comment,
+    "Set Field": build_set_field,
+    "Set Variable": build_set_variable,
+    "If": build_if,
+    "Else If": build_if,
+    "Exit Loop If": build_exit_loop_if,
+    "Else": lambda export, name, params: (0, [COLLAPSED, COLLAPSED]),
+    "Loop": lambda export, name, params: (
+        0,
+        [COLLAPSED, '<Parameter type="List"><List name="Always" value="1"></List></Parameter>'],
+    ),
+    "Go to Layout": build_go_to_layout,
+    "Perform Script": build_perform_script,
+    "Show Custom Dialog": build_dialog,
+    "Exit Script": build_exit_script,
+    "Commit Records/Requests": build_commit_or_delete,
+    "Delete Record/Request": build_commit_or_delete,
+    "Set Error Capture": build_switch,
+    "Allow User Abort": build_switch,
+    "Refresh Window": build_refresh_window,
+    "Close Window": build_close_window,
+}
+
+
+def build_step(export: Export, name: str, params: list[str], enabled: bool) -> str:
+    builder = BUILDERS.get(name)
+    if builder:
+        options, values = builder(export, name, params)
         return step_xml(name, options, values, enabled)
-    if name in ("Set Error Capture", "Allow User Abort"):
-        need(1)
-        flag = on(params[0], True)
-        return step_xml(
-            name,
-            196608 if flag else 65536,
-            [f'<Parameter type="Boolean"><Boolean id="131072" value="{flag}"></Boolean></Parameter>'],
-            enabled,
-        )
-    if name == "Refresh Window":
-        join, external = (
-            on(labelled(params, "Flush cached join results"), False),
-            on(labelled(params, "Flush cached external data"), False),
-        )
-        return step_xml(
-            name,
-            FLUSH_JOINS * join + FLUSH_EXTERNAL * external,
-            [
-                boolean("Flush cached join results", FLUSH_JOINS, join),
-                boolean("Flush cached external data", FLUSH_EXTERNAL, external),
-            ],
-            enabled,
-        )
-    if name == "Close Window":
-        return step_xml(
-            name,
-            -2147483648,
-            [
-                '<Parameter type="WindowReference"><WindowReference><Select kind="0" type="current">'
-                "</Select></WindowReference></Parameter>"
-            ],
-            enabled,
-        )
     if name in NO_PARAMS:
         return step_xml(name, 0, enabled=enabled)
     raise PatchworkError(
