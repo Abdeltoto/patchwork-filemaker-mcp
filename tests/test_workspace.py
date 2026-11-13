@@ -120,6 +120,36 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(Workspace.locate(self.tmp).version, 1)
         self.assertTrue((self.tmp / ".patchwork" / "v001.fmp12").is_file())
 
+    def test_reopening_with_force_starts_from_a_clean_workspace(self):
+        ops.add_value_list(self.ws, "Status", ["Active"])
+        ws = Workspace.create(self.src, "Admin", True, self.tmp, force=True, runner=self.tool)
+        self.assertEqual(ws.version, 0)
+        self.assertFalse((self.tmp / ".patchwork" / "v001.fmp12").exists())
+        self.assertFalse((self.tmp / ".patchwork" / "p001.xml").exists())
+
+    def test_an_open_that_fails_leaves_no_workspace(self):
+        other = self.tmp / "other"
+        other.mkdir()
+        self.tool.export_xml = mock.Mock(side_effect=PatchworkError("FMDeveloperTool failed (exit 1)."))
+        with self.assertRaisesRegex(PatchworkError, r"FMDeveloperTool failed"):
+            Workspace.create(self.src, "Admin", True, other, runner=self.tool)
+        self.assertEqual(list(other.iterdir()), [])
+
+    def test_nothing_to_undo_on_the_opened_file(self):
+        with self.assertRaisesRegex(PatchworkError, r"^Nothing to undo: this is the opened file\.$"):
+            self.ws.undo()
+
+    def test_the_workspace_is_found_from_patchwork_project(self):
+        with mock.patch.dict(os.environ, {"PATCHWORK_PROJECT": str(self.tmp)}):
+            self.assertEqual(Workspace.locate().root, self.tmp.resolve() / ".patchwork")
+
+    def test_the_workspace_is_found_from_a_subfolder(self):
+        deeper = self.tmp / "exports" / "today"
+        deeper.mkdir(parents=True)
+        env = {k: v for k, v in os.environ.items() if k != "PATCHWORK_PROJECT"}
+        with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(Path, "cwd", return_value=deeper):
+            self.assertEqual(Workspace.locate().root, self.tmp.resolve() / ".patchwork")
+
 
 class SummaryTests(unittest.TestCase):
     def test_a_version_shows_40_changes_then_a_count(self):
