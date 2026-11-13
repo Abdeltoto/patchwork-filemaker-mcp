@@ -21,7 +21,7 @@ from pathlib import Path
 from patchwork import PatchworkError
 from patchwork.build import wrap
 from patchwork.export import Export
-from patchwork.objects import diff, normalize
+from patchwork.objects import diff, new_outside_steps, normalize
 from patchwork.tools import Runner, require_copy, require_source
 
 FOLDER = ".patchwork"
@@ -156,7 +156,7 @@ class Workspace:
                 if leftover.exists():
                     leftover.unlink()
             raise
-        changes = diff(self.export, after)
+        changes = diff(self.export, after) + new_outside_steps(self.export, after)
         self.state["versions"].append({"n": n, "message": message, "time": now(), "changes": changes})
         self.save_state()
         self._export = after

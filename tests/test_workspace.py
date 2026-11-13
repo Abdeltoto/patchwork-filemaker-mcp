@@ -74,6 +74,29 @@ class WorkspaceTests(unittest.TestCase):
             self.ws.save(self.src)
         self.assertIn("Saved v000", ops.save(self.ws, str(self.tmp / "out.fmp12")))
 
+    def test_new_steps_that_reach_outside_the_file_are_flagged(self):
+        def add_steps(*names):
+            steps = "".join(f'<Step id="0" name="{n}" enable="True"></Step>\n' for n in names)
+            return lambda patch, text: text.replace('<Step hash="ABC"', steps + '<Step hash="ABC"', 1)
+
+        self.tool.effect = add_steps("Send Event", "Beep", "Insert from URL", "Insert from URL")
+        changes = self.ws.apply("<Action/>", "first").changes
+        self.assertEqual(
+            [c for c in changes if c.startswith("!")],
+            [
+                "! 2 new Insert from URL step(s): they run when the file is used, check them before opening it",
+                "! 1 new Send Event step(s): they run when the file is used, check them before opening it",
+            ],
+        )
+        self.tool.effect = add_steps("Insert from URL", "Beep")
+        changes = self.ws.apply("<Action/>", "second").changes
+        self.assertEqual(
+            [c for c in changes if c.startswith("!")],
+            ["! 1 new Insert from URL step(s): they run when the file is used, check them before opening it"],
+        )
+        self.tool.effect = add_steps("Beep")
+        self.assertEqual([c for c in self.ws.apply("<Action/>", "third").changes if c.startswith("!")], [])
+
     def test_dry_run_writes_the_patch_only(self):
         text = ops.add_value_list(self.ws, "Status", ["Active"], dry_run=True)
         self.assertIn("p001.xml", text)

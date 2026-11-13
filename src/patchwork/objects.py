@@ -394,3 +394,26 @@ def diff(before: Export, after: Export) -> list[str]:
     changes += [f"- {k} {n}" for (k, n) in old if (k, n) not in new]
     changes += [f"~ {k} {n}" for (k, n), v in new.items() if (k, n) in old and old[(k, n)] != v]
     return sorted(changes, key=lambda c: (c[2:], c[0]))
+
+
+# Steps that reach outside the file: network, other programs, mail, plug-ins.
+OUTSIDE_STEPS = (
+    "Send Event",
+    "Perform AppleScript",
+    "Perform JavaScript in Web Viewer",
+    "Insert from URL",
+    "Open URL",
+    "Send Mail",
+    "Install Plug-In File",
+)
+
+
+def new_outside_steps(before: Export, after: Export) -> list[str]:
+    """One warning per kind of step from OUTSIDE_STEPS that `after` has more of than `before`."""
+    count = re.compile(r'<Step [^>]*\bname="([^"]*)"')
+    old, new = count.findall(before.text), count.findall(after.text)
+    return [
+        f"! {added} new {name} step(s): they run when the file is used, check them before opening it"
+        for name in sorted(OUTSIDE_STEPS)
+        if (added := new.count(name) - old.count(name)) > 0
+    ]
