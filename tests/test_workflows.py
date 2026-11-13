@@ -28,5 +28,15 @@ class WorkflowTests(unittest.TestCase):
                         self.assertIn("==", package)
 
 
+class DependencyFloorTests(unittest.TestCase):
+    def test_pillow_floor_is_the_newest_each_python_can_install(self):
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        image = re.search(r"(?m)^image = \[(.*)\]$", pyproject).group(1)
+        self.assertEqual(
+            re.findall(r'"([^"]*)"', image),
+            ["Pillow>=13; python_version >= '3.11'", "Pillow>=12.3; python_version < '3.11'"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -26,7 +26,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-image = ["Pillow>=9"]
+# Pillow 13 fixes known vulnerabilities but needs Python 3.11; 12.3 is the newest release for 3.10.
+image = ["Pillow>=13; python_version >= '3.11'", "Pillow>=12.3; python_version < '3.11'"]
 
 [project.scripts]
 patchwork = "patchwork.cli:main"
