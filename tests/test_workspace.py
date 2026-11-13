@@ -154,6 +154,35 @@ class McpTests(unittest.TestCase):
         reply = self.converse({"jsonrpc": "2.0", "id": 4, "method": "resources/list"})[0]
         self.assertEqual(reply["error"]["code"], -32601)
 
+    def test_bad_lines_get_a_parse_error_and_the_server_keeps_going(self):
+        stdout = io.StringIO()
+        serve(None, io.StringIO('not json\n\n{"jsonrpc": "2.0", "id": 2, "method": "ping"}\n'), stdout)
+        replies = [json.loads(line) for line in stdout.getvalue().splitlines()]
+        self.assertEqual(
+            replies,
+            [
+                {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}},
+                {"jsonrpc": "2.0", "id": 2, "result": {}},
+            ],
+        )
+
+    def test_an_unexpected_failure_is_an_internal_error(self):
+        reply = self.converse(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "tools/call",
+                "params": {"name": "patchwork_open", "arguments": {"account": "Admin"}},
+            }
+        )[0]
+        self.assertEqual(reply, {"jsonrpc": "2.0", "id": 6, "error": {"code": -32603, "message": "KeyError: 'source'"}})
+
+    def test_unknown_tool_is_a_tool_error(self):
+        reply = self.converse({"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "nope"}})[0]
+        self.assertEqual(
+            reply["result"], {"content": [{"type": "text", "text": "Unknown tool: nope"}], "isError": True}
+        )
+
     def test_tools_that_can_lose_work_are_marked_destructive(self):
         reply = self.converse({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})[0]
         annotations = {t["name"]: t["annotations"] for t in reply["result"]["tools"]}
