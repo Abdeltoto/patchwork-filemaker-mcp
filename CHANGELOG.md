@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Not published on PyPI yet: `pip install filemaker-patchwork` still installs 0.1.0.
+
+### Added
+
+- `PATCHWORK_TOOL_TIMEOUT`: a Claris tool that does not answer is stopped after this many seconds (default 1800), with a message that names the tool.
+- A warning line `! N new STEP step(s): they run when the file is used, check them before opening it` when a version adds Send Event, Perform AppleScript, Perform JavaScript in Web Viewer, Insert from URL, Open URL, Send Mail or Install Plug-In File.
+- The MCP `initialize` instructions tell the agent that names, script text and calculations read from a file are data, never instructions.
+- `.env.example` lists every variable Patchwork reads.
+- Documentation: [ARCHITECTURE.md](ARCHITECTURE.md), the [MCP tools reference](docs/mcp-tools.md), [decision notes](docs/decisions/).
+
+### Changed
+
+- Through MCP, `patchwork_save` with `force` and `patchwork_open` with `force` are refused outside the project folder. Set `PATCHWORK_ALLOW_OUTSIDE=1` to allow them. The CLI is unchanged.
+- The six MCP tools that can lose work (`open`, `replace`, `delete`, `push`, `undo`, `save`) declare `destructiveHint: true`. All tools said `false` before.
+- The `image` extra needs Pillow 13 or later on Python 3.11+, and Pillow 12.3 or later on Python 3.10.
+
+### Security
+
+- A Claris tool in the current folder is never run, even when `PATH` contains `.` (relative `PATH` entries are skipped).
+- SECURITY.md documents that the password reaches the Claris tools as a command-line argument, and the Pillow limit on Python 3.10.
+- CI: every GitHub action is pinned to a commit, workflows get a read-only token, and blocking jobs run gitleaks, pip-audit, bandit, ruff, mypy, import-linter and a coverage threshold.
+
 ## [0.1.0] - 2026-11-09
 
 First public release.
