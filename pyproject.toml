@@ -61,6 +61,49 @@ ignore = ["E501"]
 branch = true
 source_pkgs = ["patchwork"]
 
+# Layers in ARCHITECTURE_PLAN.md. Checked by `lint-imports` in CI.
+[tool.importlinter]
+root_package = "patchwork"
+
+[[tool.importlinter.contracts]]
+name = "Interfaces > application > working copy > Claris tools"
+type = "layers"
+layers = [
+    "patchwork.__main__",
+    "patchwork.cli",
+    "patchwork.mcp",
+    "patchwork.ops | patchwork.rebrand | patchwork.project",
+    "patchwork.workspace",
+    "patchwork.tools",
+]
+
+[[tool.importlinter.contracts]]
+name = "FileMaker logic does no I/O"
+type = "forbidden"
+source_modules = [
+    "patchwork.export",
+    "patchwork.objects",
+    "patchwork.build",
+    "patchwork.script",
+    "patchwork.place",
+    "patchwork.uses",
+]
+forbidden_modules = [
+    "patchwork.tools",
+    "patchwork.workspace",
+    "patchwork.ops",
+    "patchwork.rebrand",
+    "patchwork.project",
+    "patchwork.cli",
+    "patchwork.mcp",
+]
+
+[[tool.importlinter.contracts]]
+name = "Scripts do not depend on layout placement"
+type = "forbidden"
+source_modules = ["patchwork.script"]
+forbidden_modules = ["patchwork.place"]
+
 [tool.mypy]
 python_version = "3.10"
 files = ["src"]

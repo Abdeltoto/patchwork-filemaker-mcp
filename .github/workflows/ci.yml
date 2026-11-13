@@ -16,10 +16,14 @@ jobs:
         with:
           python-version: "3.13"
       # Same versions as .pre-commit-config.yaml; dev tools only, not package dependencies.
-      - run: pip install ruff==0.17.5 mypy==2.4.1
+      - run: pip install ruff==0.17.5 mypy==2.4.1 import-linter==2.16
       - run: ruff check src tests
       - run: ruff format --check src tests
       - run: mypy
+      - name: Forbidden imports between layers (import-linter, contracts in pyproject.toml)
+        run: lint-imports
+        env:
+          PYTHONPATH: src
 
   security:
     runs-on: ubuntu-latest
