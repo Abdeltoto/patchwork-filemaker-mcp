@@ -71,6 +71,33 @@ class ScriptTextTests(unittest.TestCase):
                 xml = script.build(self.fields if line.startswith("Set Field") else self.export, line)
                 self.assertEqual(re.sub(r"<UUID>[^<]*</UUID>", "<UUID></UUID>", xml), expected)
 
+    def test_steps_with_missing_parameters_are_refused(self):
+        lines = {
+            "Set Field [ Clients::Notes ]": "Set Field needs 2 parameter(s) in [ ... ], got 1.",
+            "Set Variable [ $x ]": "Set Variable needs 2 parameter(s) in [ ... ], got 1.",
+            "If": "If needs 1 parameter(s) in [ ... ], got 0.",
+            "Else If": "Else If needs 1 parameter(s) in [ ... ], got 0.",
+            "Exit Loop If": "Exit Loop If needs 1 parameter(s) in [ ... ], got 0.",
+            "Go to Layout": "Go to Layout needs 1 parameter(s) in [ ... ], got 0.",
+            "Perform Script": "Perform Script needs 1 parameter(s) in [ ... ], got 0.",
+            'Show Custom Dialog [ "Title" ]': "Show Custom Dialog needs 2 parameter(s) in [ ... ], got 1.",
+            "Set Error Capture": "Set Error Capture needs 1 parameter(s) in [ ... ], got 0.",
+            "Allow User Abort": "Allow User Abort needs 1 parameter(s) in [ ... ], got 0.",
+        }
+        for line, message in lines.items():
+            with self.subTest(line=line), self.assertRaisesRegex(PatchworkError, f"^{re.escape(message)}$"):
+                script.build(self.fields, line)
+
+    def test_malformed_step_parameters_are_refused(self):
+        lines = {
+            "Set Variable [ x ; 1 ]": "Set Variable needs a $name or $$name, got: x",
+            'Show Custom Dialog [ "T" ; "M" ; Buttons: "a", "b", "c", "d" ]': "Show Custom Dialog has at most 3 buttons.",
+            "Set Error Capture [ Maybe ]": "Expected On or Off, got: Maybe",
+        }
+        for line, message in lines.items():
+            with self.subTest(line=line), self.assertRaisesRegex(PatchworkError, f"^{re.escape(message)}$"):
+                script.build(self.export, line)
+
     def test_names_that_do_not_exist_are_refused(self):
         with self.assertRaisesRegex(PatchworkError, "layout not found"):
             script.build(self.export, 'Go to Layout [ "Nowhere" ]')
