@@ -18,6 +18,8 @@ build/
 dist/
 .venv/
 .pytest_cache/
+.coverage
+htmlcov/
 
 # OS / editors
 .DS_Store

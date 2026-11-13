@@ -28,6 +28,18 @@ class WorkflowTests(unittest.TestCase):
                         self.assertIn("==", package)
 
 
+BUSINESS_LOGIC = ["ops", "workspace", "tools", "build", "objects", "script", "place", "uses", "export", "rebrand"]
+
+
+class CoverageGateTests(unittest.TestCase):
+    def test_ci_fails_below_90_percent_on_the_business_logic(self):
+        ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        gate = re.search(r'coverage report --include="([^"]+)" --fail-under=(\d+)', ci)
+        self.assertIsNotNone(gate, "no blocking coverage report in ci.yml")
+        self.assertGreaterEqual(int(gate.group(2)), 90)
+        self.assertEqual(gate.group(1).split(","), [f"src/patchwork/{name}.py" for name in BUSINESS_LOGIC])
+
+
 class DependencyFloorTests(unittest.TestCase):
     def test_pillow_floor_is_the_newest_each_python_can_install(self):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
