@@ -45,3 +45,11 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 patchwork = ["templates/*", "skills/*/SKILL.md"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
