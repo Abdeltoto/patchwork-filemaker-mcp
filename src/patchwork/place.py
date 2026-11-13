@@ -109,88 +109,18 @@ def place_field(
     """(whole new layout XML, field UUID). `near` is a field already on the layout, as Name or TO::Name."""
     block = export.layout(layout)
     xml = block.xml
-    field_id, field_name, field_uuid, to_ref = field_target(export, field)
-    near_name = near.split("::", 1)[-1]
-
-    parts = list(re.finditer(r"<Part type=\"([^\"]*)\"[\s\S]*?</Part>", xml))
-    for part in parts:
-        objs = top_level(part.group(0), part.start())
-        anchor = next(
-            (
-                o
-                for o in objs
-                if re.search(rf'<FieldReference [^>]*\bname="{re.escape(escape(near_name))}"', o.xml)
-                and (near_name == near or f'name="{escape(near.split("::")[0])}"' in o.xml)
-            ),
-            None,
-        )
-        if anchor:
-            break
-    else:
-        raise PatchworkError(
-            f"No field {near!r} directly on layout {layout!r}. Name a field that is on it, e.g. one from `patchwork show layout`."
-        )
+    target = field_target(export, field)
+    field_uuid = target[2]
+    parts, part, objs, anchor = find_anchor(xml, layout, near)
     if re.search(rf'<FieldReference [^>]*\bUUID="{field_uuid}"', part.group(0)):
         raise PatchworkError(f"{field} is already on {layout!r}.")
 
     label_id = re.search(r"<Accessibility>\s*<Label>(\d+)</Label>", anchor.xml)
     caption = next((o for o in objs if label_id and o.id == label_id.group(1) and 'type="Text"' in o.xml[:200]), None)
     group = anchor.box.union(caption.box) if caption else anchor.box
-    if side == "below":
-        line = group.bottom - SLACK
-        under = [
-            o.box.top - group.bottom
-            for o in objs
-            if o.box.top >= line and o.box.left < group.right and group.left < o.box.right
-        ]
-        gap = min(under) if under and 0 <= min(under) <= MAX_COPIED_GAP else GAP
-        dy, dx = group.bottom - group.top + gap, 0.0
-    elif side == "right":
-        line, dy, dx = None, 0.0, group.right - group.left + GAP
-    else:
-        raise PatchworkError("side is below or right.")
-
-    placed = group.moved(dy, dx)
-    width = float(cast(re.Match, re.search(r'<Layout [^>]*\bwidth="([\d.]+)"', xml)).group(1))
-    if placed.right > width:
-        raise PatchworkError(f"No room right of {near!r}: it would go past the edge of the layout. Use side=below.")
-    staying = [o for o in objs if line is None or o.box.top < line]
-    blocking = [o for o in staying if o.box.overlaps(placed) and not stretches(o)]
-    if blocking:
-        names = [re.search(r'<FieldReference [^>]*\bname="([^"]*)"', o.xml) for o in blocking]
-        what = ", ".join(
-            f"field {n.group(1)}" if n else f"object {o.id}" for n, o in zip(names, blocking, strict=False)
-        )
-        raise PatchworkError(
-            f"No room {side} {near!r}: it would cover {what}. "
-            f"Try side={'right' if side == 'below' else 'below'} or another field."
-        )
-
-    next_id = (
-        max(
-            (int(i) for i in re.findall(r'<LayoutObject [^>]*?\bid="(\d+)"', export.section("LayoutCatalog"))),
-            default=0,
-        )
-        + 1
-    )
-    new_field = copy(anchor.xml, str(next_id), dy, dx)
-    new_field = re.sub(
-        r"<FieldReference [^>]*>[\s\S]*?</FieldReference>",
-        f'<FieldReference id="{field_id}" name="{escape(field_name)}" repetition="1" UUID="{field_uuid}">'
-        f"\n{indent_of(anchor.xml, 'TableOccurrenceReference')}{to_ref}\n{indent_of(anchor.xml, 'FieldReference')}</FieldReference>",
-        new_field,
-        count=1,
-    )
-    new_field = re.sub(r"\s*<TabOrder [\s\S]*?</TabOrder>", "", new_field)
-    added = [new_field]
-    if caption:
-        text = escape_cdata(label if label is not None else field_name)
-        new_caption = copy(caption.xml, str(next_id + 1), dy, dx)
-        new_caption = re.sub(
-            r"<Data><!\[CDATA\[[\s\S]*?\]\]></Data>", lambda _: f"<Data><![CDATA[{text}]]></Data>", new_caption, count=1
-        )
-        new_field = new_field.replace(f"<Label>{caption.id}</Label>", f"<Label>{next_id + 1}</Label>")
-        added = [new_caption, new_field]
+    line, dy, dx = offset(objs, group, side)
+    check_room(xml, objs, group.moved(dy, dx), line, side, near)
+    added = new_objects(export, anchor, caption, target, label, dy, dx)
 
     edits = [(anchor.end, anchor.end, "".join(f"\n{a}" for a in added))]
     if line is not None:
@@ -224,6 +154,99 @@ def place_field(
     first = cast(re.Match, count.search(xml, part.start()))
     xml = xml[: first.start(2)] + str(int(first.group(2)) + len(added)) + xml[first.end(2) :]
     return xml, field_uuid
+
+
+def find_anchor(xml: str, layout: str, near: str) -> tuple[list[re.Match], re.Match, list[Obj], Obj]:
+    """(all parts, the part holding `near`, its top-level objects, the `near` field object)."""
+    near_name = near.split("::", 1)[-1]
+    parts = list(re.finditer(r"<Part type=\"([^\"]*)\"[\s\S]*?</Part>", xml))
+    for part in parts:
+        objs = top_level(part.group(0), part.start())
+        anchor = next(
+            (
+                o
+                for o in objs
+                if re.search(rf'<FieldReference [^>]*\bname="{re.escape(escape(near_name))}"', o.xml)
+                and (near_name == near or f'name="{escape(near.split("::")[0])}"' in o.xml)
+            ),
+            None,
+        )
+        if anchor:
+            return parts, part, objs, anchor
+    raise PatchworkError(
+        f"No field {near!r} directly on layout {layout!r}. Name a field that is on it, e.g. one from `patchwork show layout`."
+    )
+
+
+def offset(objs: list[Obj], group: Box, side: str) -> tuple[float | None, float, float]:
+    """(line below which objects move down, or None; dy; dx) for the copy of `group`."""
+    if side == "below":
+        line = group.bottom - SLACK
+        under = [
+            o.box.top - group.bottom
+            for o in objs
+            if o.box.top >= line and o.box.left < group.right and group.left < o.box.right
+        ]
+        gap = min(under) if under and 0 <= min(under) <= MAX_COPIED_GAP else GAP
+        return line, group.bottom - group.top + gap, 0.0
+    if side == "right":
+        return None, 0.0, group.right - group.left + GAP
+    raise PatchworkError("side is below or right.")
+
+
+def check_room(xml: str, objs: list[Obj], placed: Box, line: float | None, side: str, near: str) -> None:
+    width = float(cast(re.Match, re.search(r'<Layout [^>]*\bwidth="([\d.]+)"', xml)).group(1))
+    if placed.right > width:
+        raise PatchworkError(f"No room right of {near!r}: it would go past the edge of the layout. Use side=below.")
+    staying = [o for o in objs if line is None or o.box.top < line]
+    blocking = [o for o in staying if o.box.overlaps(placed) and not stretches(o)]
+    if blocking:
+        names = [re.search(r'<FieldReference [^>]*\bname="([^"]*)"', o.xml) for o in blocking]
+        what = ", ".join(
+            f"field {n.group(1)}" if n else f"object {o.id}" for n, o in zip(names, blocking, strict=False)
+        )
+        raise PatchworkError(
+            f"No room {side} {near!r}: it would cover {what}. "
+            f"Try side={'right' if side == 'below' else 'below'} or another field."
+        )
+
+
+def new_objects(
+    export: Export,
+    anchor: Obj,
+    caption: Obj | None,
+    target: tuple[str, str, str, str],
+    label: str | None,
+    dy: float,
+    dx: float,
+) -> list[str]:
+    """XML of the copied field, preceded by its copied caption when the anchor has one."""
+    field_id, field_name, field_uuid, to_ref = target
+    next_id = (
+        max(
+            (int(i) for i in re.findall(r'<LayoutObject [^>]*?\bid="(\d+)"', export.section("LayoutCatalog"))),
+            default=0,
+        )
+        + 1
+    )
+    new_field = copy(anchor.xml, str(next_id), dy, dx)
+    new_field = re.sub(
+        r"<FieldReference [^>]*>[\s\S]*?</FieldReference>",
+        f'<FieldReference id="{field_id}" name="{escape(field_name)}" repetition="1" UUID="{field_uuid}">'
+        f"\n{indent_of(anchor.xml, 'TableOccurrenceReference')}{to_ref}\n{indent_of(anchor.xml, 'FieldReference')}</FieldReference>",
+        new_field,
+        count=1,
+    )
+    new_field = re.sub(r"\s*<TabOrder [\s\S]*?</TabOrder>", "", new_field)
+    if not caption:
+        return [new_field]
+    text = escape_cdata(label if label is not None else field_name)
+    new_caption = copy(caption.xml, str(next_id + 1), dy, dx)
+    new_caption = re.sub(
+        r"<Data><!\[CDATA\[[\s\S]*?\]\]></Data>", lambda _: f"<Data><![CDATA[{text}]]></Data>", new_caption, count=1
+    )
+    new_field = new_field.replace(f"<Label>{caption.id}</Label>", f"<Label>{next_id + 1}</Label>")
+    return [new_caption, new_field]
 
 
 def stretches(o: Obj) -> bool:
