@@ -6,6 +6,19 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # Same versions as .pre-commit-config.yaml; dev tools only, not package dependencies.
+      - run: pip install ruff==0.17.5 mypy==2.4.1
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+      - run: mypy
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
