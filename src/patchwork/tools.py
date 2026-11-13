@@ -115,9 +115,14 @@ def require_copy(src: Path, dest: Path, force: bool) -> Path:
         raise PatchworkError("The destination is the source file. Patchwork always writes a copy.")
     if dest.suffix.lower() != ".fmp12":
         raise PatchworkError("The destination must end in .fmp12.")
-    if dest.exists() and not force:
-        raise PatchworkError(f"{dest} already exists. Pass --force to replace it.")
-    return dest
+    return require_new(dest, force)
+
+
+def require_new(path: Path, force: bool) -> Path:
+    path = path.resolve()
+    if path.exists() and not force:
+        raise PatchworkError(f"{path} already exists. Pass --force to replace it.")
+    return path
 
 
 def require_root(path: Path, expected: str) -> None:

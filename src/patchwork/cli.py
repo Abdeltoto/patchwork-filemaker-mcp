@@ -12,7 +12,7 @@ from patchwork import PatchworkError, __version__, ops
 from patchwork.build import FIELD_TYPES
 from patchwork.project import init_project
 from patchwork.rebrand import Brand, rebrand
-from patchwork.tools import PASSWORD_ENV, Runner, find_tool, require_copy, require_root, require_source
+from patchwork.tools import PASSWORD_ENV, Runner, find_tool, require_copy, require_new, require_root, require_source
 from patchwork.workspace import Workspace
 
 EPILOG = f"""typical session:
@@ -389,9 +389,7 @@ def plumbing(args: argparse.Namespace, what: str) -> int:
     if what == "guids":
         runner.generate_guids(src, require_copy(src, args.dest, args.force), args.force)
     elif what == "export":
-        out = args.out.resolve()
-        if out.exists() and not args.force:
-            raise PatchworkError(f"{out} already exists. Pass --force to replace it.")
+        out = require_new(args.out, args.force)
         out.parent.mkdir(parents=True, exist_ok=True)
         runner.export_xml(src, out, args.force)
     elif what == "validate":
