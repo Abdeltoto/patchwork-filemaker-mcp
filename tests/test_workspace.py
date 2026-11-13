@@ -225,6 +225,36 @@ class McpTests(unittest.TestCase):
         for name, hints in annotations.items():
             self.assertEqual(hints["destructiveHint"], name in destructive, name)
 
+    def test_open_through_mcp_remembers_the_project_for_the_next_calls(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "App.fmp12"
+            src.write_bytes(b"fmp12")
+            env = {k: v for k, v in os.environ.items() if k != "PATCHWORK_PROJECT"}
+            with (
+                mock.patch.dict(os.environ, env, clear=True),
+                mock.patch("patchwork.workspace.Runner", lambda *a, **k: FakeTool()),
+            ):
+                replies = self.converse(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "tools/call",
+                        "params": {
+                            "name": "patchwork_open",
+                            "arguments": {"source": str(src), "account": "Admin", "no_password": True},
+                        },
+                    },
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 2,
+                        "method": "tools/call",
+                        "params": {"name": "patchwork_status", "arguments": {}},
+                    },
+                )
+            self.assertTrue(replies[0]["result"]["content"][0]["text"].startswith("Opened App.fmp12 as v000 in "))
+            self.assertFalse(replies[1]["result"]["isError"], replies[1])
+            self.assertIn(f"source   {src.resolve()}", replies[1]["result"]["content"][0]["text"])
+
     def test_mcp_never_replaces_or_deletes_outside_the_project(self):
         with tempfile.TemporaryDirectory() as tmp:
             project, outside = Path(tmp) / "project", Path(tmp) / "other"
