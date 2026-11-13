@@ -58,15 +58,6 @@ def palette(css: str) -> list[tuple[str, int]]:
     return sorted(counts.items(), key=lambda item: (-item[1], item[0]))
 
 
-def palette(css: str) -> list[tuple[str, int]]:
-    """Hex colors used in a block of FileMaker CSS, most frequent first."""
-    found = ["".join(f"{round(float(m.group(i)) * 2.55):02X}" for i in (1, 2, 3)) for m in RGBA.finditer(css)]
-    counts: dict[str, int] = {}
-    for color in found:
-        counts[color] = counts.get(color, 0) + 1
-    return sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-
-
 def normalize_hex(value: str) -> str:
     value = value.strip().lstrip("#").upper()
     if not re.fullmatch(r"[0-9A-F]{6}", value):
