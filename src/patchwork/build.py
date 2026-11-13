@@ -12,11 +12,11 @@ from __future__ import annotations
 import base64
 import io
 import re
-import uuid
 from pathlib import Path
 
 from patchwork import PatchworkError
 from patchwork.export import Export, escape
+from patchwork.objects import new_uuid, split_field
 
 PATCH_VERSION = "2.3.0.0"
 CALC_MAX_CHARS = 28000
@@ -233,14 +233,3 @@ def layouts_patch(
 def extract_layout_patch(export: Export, name: str) -> str:
     layout = export.layout(name)
     return wrap(replace_action([("Layout", layout.uuid, layout.xml)]), version=export.version)
-
-
-def split_field(qualified: str) -> tuple[str, str]:
-    if "::" not in qualified:
-        raise PatchworkError(f"Expected a field as Table::Field, got: {qualified}")
-    table, name = qualified.split("::", 1)
-    return table, name
-
-
-def new_uuid() -> str:
-    return str(uuid.uuid4()).upper()
