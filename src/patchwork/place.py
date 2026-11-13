@@ -66,7 +66,11 @@ def own_bounds(xml: str) -> Box:
     found = BOUNDS.search(xml)
     if not found:
         raise PatchworkError("Layout object without bounds.")
-    return Box(*(float(v) for v in found.groups()))
+    return box_of(found)
+
+
+def box_of(match: re.Match) -> Box:
+    return Box(*(float(v) for v in match.groups()))
 
 
 def top_level(part: str, offset: int) -> list[Obj]:
@@ -196,7 +200,7 @@ def place_field(
                     (
                         o.start,
                         o.end,
-                        BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).grown(dy).tag(), o.xml, count=1),
+                        BOUNDS.sub(lambda m: box_of(m).grown(dy).tag(), o.xml, count=1),
                     )
                 )
         definition = re.search(r'<Definition [^>]*\bsize="([\d.]+)"', part.group(0))
@@ -204,7 +208,7 @@ def place_field(
             at = part.start() + definition.start(1)
             edits.append((at, at + len(definition.group(1)), num(float(definition.group(1)) + dy)))
         for later in parts[parts.index(part) + 1 :]:
-            moved = BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).moved(dy, 0).tag(), later.group(0))
+            moved = shift(later.group(0), dy)
             moved = re.sub(
                 r'(<Definition [^>]*\babsolute=")([\d.]+)',
                 lambda m: m.group(1) + num(float(m.group(2)) + dy),
@@ -226,7 +230,7 @@ def stretches(o: Obj) -> bool:
 
 
 def shift(xml: str, dy: float) -> str:
-    return BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).moved(dy, 0).tag(), xml)
+    return BOUNDS.sub(lambda m: box_of(m).moved(dy, 0).tag(), xml)
 
 
 def copy(xml: str, new_id: str, dy: float, dx: float) -> str:
@@ -234,7 +238,7 @@ def copy(xml: str, new_id: str, dy: float, dx: float) -> str:
     head = re.sub(r'\shash="[^"]*"', "", xml[:head_end])
     head = re.sub(r'\sid="\d+"', f' id="{new_id}"', head, count=1)
     body = objects.fresh_uuids(xml[head_end:])
-    body = BOUNDS.sub(lambda m: Box(*(float(v) for v in m.groups())).moved(dy, dx).tag(), body)
+    body = BOUNDS.sub(lambda m: box_of(m).moved(dy, dx).tag(), body)
     return head + body
 
 
