@@ -44,7 +44,7 @@ def tool(
     description: str,
     properties: dict,
     required: list[str],
-    handler: Callable,
+    handler: Callable | None,
     needs_ws: bool = True,
     read_only: bool = False,
     destructive: bool = False,
@@ -366,7 +366,7 @@ def serve(project: Path | None = None, stdin=None, stdout=None) -> int:
         try:
             message = json.loads(line)
         except json.JSONDecodeError:
-            reply = rpc_error(None, PARSE_ERROR, "Parse error")
+            reply: dict | None = rpc_error(None, PARSE_ERROR, "Parse error")
         else:
             reply = server.handle(message)
         if reply is not None:

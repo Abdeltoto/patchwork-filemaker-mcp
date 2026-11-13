@@ -13,6 +13,7 @@ import base64
 import io
 import re
 from pathlib import Path
+from typing import cast
 
 from patchwork import PatchworkError
 from patchwork.export import Export, escape
@@ -227,7 +228,7 @@ def layouts_patch(
             continue
         xml = recolor(remap_fonts(layout.xml, fonts), colors)
         if pattern:
-            xml = pattern.sub(target, xml)
+            xml = pattern.sub(cast(str, target), xml)
         if xml != layout.xml:
             blocks.append(("Layout", layout.uuid, xml))
             names.append(layout.name)

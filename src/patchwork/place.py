@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import cast
 
 from patchwork import PatchworkError, objects
 from patchwork.export import Export, escape, unescape
@@ -150,7 +151,7 @@ def place_field(
         raise PatchworkError("side is below or right.")
 
     placed = group.moved(dy, dx)
-    width = float(re.search(r'<Layout [^>]*\bwidth="([\d.]+)"', xml).group(1))
+    width = float(cast(re.Match, re.search(r'<Layout [^>]*\bwidth="([\d.]+)"', xml)).group(1))
     if placed.right > width:
         raise PatchworkError(f"No room right of {near!r}: it would go past the edge of the layout. Use side=below.")
     staying = [o for o in objs if line is None or o.box.top < line]
@@ -220,7 +221,7 @@ def place_field(
     for start, end, text in sorted(edits, key=lambda e: e[0], reverse=True):
         xml = xml[:start] + text + xml[end:]
     count = re.compile(r'(<ObjectList membercount=")(\d+)(">)')
-    first = count.search(xml, part.start())
+    first = cast(re.Match, count.search(xml, part.start()))
     xml = xml[: first.start(2)] + str(int(first.group(2)) + len(added)) + xml[first.end(2) :]
     return xml, field_uuid
 

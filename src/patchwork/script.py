@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import html
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
+from typing import cast
 
 from patchwork import PatchworkError, objects
 from patchwork.export import Export, escape, unescape
@@ -75,7 +76,7 @@ def quoted(name: str) -> str:
 
 def render(step: str) -> str:
     head = step[: step.index(">")]
-    name = unescape(re.search(r'\sname="([^"]*)"', head).group(1))
+    name = unescape(cast(re.Match, re.search(r'\sname="([^"]*)"', head)).group(1))
     off = "// " if 'enable="False"' in head else ""
     if name == "# (comment)":
         comment = re.search(r'<Comment value="([^"]*)"', step)
@@ -196,7 +197,7 @@ def steps_of(xml: str) -> list[str]:
 
 
 def name_of(step: str) -> str:
-    return unescape(re.search(r'\sname="([^"]*)"', step[: step.index(">")]).group(1))
+    return unescape(cast(re.Match, re.search(r'\sname="([^"]*)"', step[: step.index(">")])).group(1))
 
 
 def to_text(steps_xml: str) -> str:
@@ -333,7 +334,7 @@ def calc_xml(text: str, position: int, datatype: int = 1) -> str:
     return f'<Calculation datatype="{datatype}" position="{position}"><Calculation><Text><![CDATA[{text}]]></Text></Calculation></Calculation>'
 
 
-def step_xml(name: str, options: int, params: list[str] = (), enabled: bool = True) -> str:
+def step_xml(name: str, options: int, params: Sequence[str] = (), enabled: bool = True) -> str:
     inner = (
         (f'<ParameterValues membercount="{len(params)}">' + "".join(params) + "</ParameterValues>") if params else ""
     )
@@ -408,8 +409,8 @@ def build_step(export: Export, name: str, params: list[str], enabled: bool) -> s
         match = re.fullmatch(r"(\$\$?[^\[\s]+)(?:\[(.+)\])?", params[0].strip())
         if not match:
             raise PatchworkError(f"Set Variable needs a $name or $$name, got: {params[0]}")
-        value = labelled(params[1:], "Value")
-        value = params[1] if value is None else value
+        given = labelled(params[1:], "Value")
+        value = params[1] if given is None else given
         return step_xml(
             name,
             16388,
@@ -517,11 +518,11 @@ def build_step(export: Export, name: str, params: list[str], enabled: bool) -> s
         return step_xml(name, options, values, enabled)
     if name in ("Set Error Capture", "Allow User Abort"):
         need(1)
-        value = on(params[0], True)
+        flag = on(params[0], True)
         return step_xml(
             name,
-            196608 if value else 65536,
-            [f'<Parameter type="Boolean"><Boolean id="131072" value="{value}"></Boolean></Parameter>'],
+            196608 if flag else 65536,
+            [f'<Parameter type="Boolean"><Boolean id="131072" value="{flag}"></Boolean></Parameter>'],
             enabled,
         )
     if name == "Refresh Window":

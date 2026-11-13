@@ -128,9 +128,9 @@ def find_uses(export: Export, kind: str, name: str) -> Uses:
     result = Uses(label)
     if uuid:
         for match in re.finditer(rf'<\w+Reference [^>]*\bUUID="{re.escape(uuid)}"', export.text):
-            owner = owner_at(spans, match.start())
-            if owner != label:
-                result.references[owner] += 1
+            referrer = owner_at(spans, match.start())
+            if referrer != label:
+                result.references[referrer] += 1
     bare = re.compile(rf"(?<![\w:]){re.escape(name.split('::', 1)[1])}(?![\w:])") if table else None
     for match in CDATA.finditer(export.text):
         calc = STRING.sub('""', match.group(1))

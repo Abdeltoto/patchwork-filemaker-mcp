@@ -6,6 +6,7 @@ import json
 import re
 from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 from patchwork import PatchworkError, objects, place, script
 from patchwork.build import (
@@ -322,7 +323,11 @@ def recolor_layouts(
     dry_run: bool = False,
 ) -> str:
     patch, names = layouts_patch(
-        ws.export, only or None, colors or {}, fonts or {}, tuple(swap_field) if swap_field else None
+        ws.export,
+        only or None,
+        colors or {},
+        fonts or {},
+        cast(tuple[str, str], tuple(swap_field)) if swap_field else None,
     )
     if not names:
         raise PatchworkError("No layout would change.")

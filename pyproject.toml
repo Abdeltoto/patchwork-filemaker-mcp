@@ -55,3 +55,12 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "B", "UP"]
 # ruff format keeps lines to 120; the longer ones left are regexes and XML templates it does not split.
 ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+
+[[tool.mypy.overrides]]
+# Pillow is the optional "image" extra.
+module = ["PIL", "PIL.*"]
+ignore_missing_imports = true
