@@ -24,6 +24,8 @@ from patchwork.uses import find_uses
 from patchwork.workspace import Result, Workspace
 
 LISTABLE = ("layouts", "scripts", "value-lists", "custom-functions", "themes", "tables", "table-occurrences", "fields")
+CHANGES_SHOWN = 40
+LOG_CHANGES_SHOWN = 10
 
 
 def open_file(
@@ -75,9 +77,9 @@ def show(ws: Workspace, kind: str, name: str, xml: bool = False) -> str:
 
 
 def describe(result: Result) -> str:
-    lines = [f"v{result.version:03d}  {result.message}"] + [f"  {c}" for c in result.changes[:40]]
-    if len(result.changes) > 40:
-        lines.append(f"  ... and {len(result.changes) - 40} more")
+    lines = [f"v{result.version:03d}  {result.message}"] + [f"  {c}" for c in result.changes[:CHANGES_SHOWN]]
+    if len(result.changes) > CHANGES_SHOWN:
+        lines.append(f"  ... and {len(result.changes) - CHANGES_SHOWN} more")
     return "\n".join(lines)
 
 
@@ -346,7 +348,7 @@ def log(ws: Workspace) -> str:
     lines = []
     for entry in ws.log():
         lines.append(f"v{entry['n']:03d}  {entry['time']}  {entry['message']}")
-        lines += [f"        {c}" for c in entry.get("changes", [])[:10]]
+        lines += [f"        {c}" for c in entry.get("changes", [])[:LOG_CHANGES_SHOWN]]
     return "\n".join(lines)
 
 

@@ -350,6 +350,9 @@ def boolean(kind: str, ident: int, value: bool) -> str:
 
 
 COLLAPSED = boolean("Collapsed", 33554432, False)
+# For these flags the Boolean id is also the bit the step sets in <Options>.
+WITH_DIALOG, SKIP_VALIDATION, FORCE_COMMIT = 128, 256, 512
+FLUSH_JOINS, FLUSH_EXTERNAL = 256, 512
 
 
 def on(value: str | None, default: bool) -> bool:
@@ -498,15 +501,19 @@ def build_step(export: Export, name: str, params: list[str], enabled: bool) -> s
         return step_xml(name, 16384, [f'<Parameter type="Calculation">{calc_xml(result, 0)}</Parameter>'], enabled)
     if name in ("Commit Records/Requests", "Delete Record/Request"):
         dialog = on(labelled(params, "With dialog"), True)
-        options = 0 if dialog else 128
-        values = [boolean("With dialog", 128, dialog)]
+        options = 0 if dialog else WITH_DIALOG
+        values = [boolean("With dialog", WITH_DIALOG, dialog)]
         if name == "Commit Records/Requests":
             skip, force = (
                 on(labelled(params, "Skip data entry validation"), False),
                 on(labelled(params, "Force Commit"), False),
             )
-            options += 256 * skip + 512 * force
-            values = [boolean("Skip data entry validation", 256, skip), *values, boolean("Force Commit", 512, force)]
+            options += SKIP_VALIDATION * skip + FORCE_COMMIT * force
+            values = [
+                boolean("Skip data entry validation", SKIP_VALIDATION, skip),
+                *values,
+                boolean("Force Commit", FORCE_COMMIT, force),
+            ]
         return step_xml(name, options, values, enabled)
     if name in ("Set Error Capture", "Allow User Abort"):
         need(1)
@@ -524,8 +531,11 @@ def build_step(export: Export, name: str, params: list[str], enabled: bool) -> s
         )
         return step_xml(
             name,
-            256 * join + 512 * external,
-            [boolean("Flush cached join results", 256, join), boolean("Flush cached external data", 512, external)],
+            FLUSH_JOINS * join + FLUSH_EXTERNAL * external,
+            [
+                boolean("Flush cached join results", FLUSH_JOINS, join),
+                boolean("Flush cached external data", FLUSH_EXTERNAL, external),
+            ],
             enabled,
         )
     if name == "Close Window":

@@ -17,6 +17,7 @@ OBJECT = re.compile(r"(?m)^(\t*)<LayoutObject [^>]*>[\s\S]*?^\1</LayoutObject>")
 BOUNDS = re.compile(r'<Bounds top="(-?[\d.]+)" left="(-?[\d.]+)" bottom="(-?[\d.]+)" right="(-?[\d.]+)"></Bounds>')
 GAP = 10
 SLACK = 4
+MAX_COPIED_GAP = 40
 
 
 @dataclass
@@ -141,7 +142,7 @@ def place_field(
             for o in objs
             if o.box.top >= line and o.box.left < group.right and group.left < o.box.right
         ]
-        gap = min(under) if under and 0 <= min(under) <= 40 else GAP
+        gap = min(under) if under and 0 <= min(under) <= MAX_COPIED_GAP else GAP
         dy, dx = group.bottom - group.top + gap, 0.0
     elif side == "right":
         line, dy, dx = None, 0.0, group.right - group.left + GAP

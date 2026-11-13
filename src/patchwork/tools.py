@@ -16,13 +16,14 @@ from patchwork import PatchworkError
 PASSWORD_ENV = "PATCHWORK_PASSWORD"
 KEY_ENV = "PATCHWORK_KEY"
 SECRET_FLAGS = {"-src_pwd", "-src_key", "-patch_key"}
+PATH_VARIABLES = {"FMUpgradeTool": "FM_UPGRADE_TOOL", "FMDeveloperTool": "FM_DEVELOPER_TOOL"}
 LOCAL_TOOLS = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local" / "share")) / "patchwork" / "fms-tools"
 
 
 def candidates(name: str) -> list[Path]:
     exe = name + (".exe" if platform.system() == "Windows" else "")
     found = []
-    override = os.environ.get("FM_UPGRADE_TOOL" if name == "FMUpgradeTool" else "FM_DEVELOPER_TOOL")
+    override = os.environ.get(PATH_VARIABLES.get(name, "FM_DEVELOPER_TOOL"))
     if override:
         found.append(Path(override))
     found += [Path(entry) / exe for entry in os.environ.get("PATH", "").split(os.pathsep) if Path(entry).is_absolute()]
@@ -52,7 +53,7 @@ def find_tool(name: str) -> Path | None:
 def require_tool(name: str) -> Path:
     tool = find_tool(name)
     if tool is None:
-        variable = "FM_UPGRADE_TOOL" if name == "FMUpgradeTool" else "FM_DEVELOPER_TOOL"
+        variable = PATH_VARIABLES.get(name, "FM_DEVELOPER_TOOL")
         raise PatchworkError(
             f"{name} not found. It ships with FileMaker Server (the free trial works). "
             f"See docs/install-fmupgradetool.md, or set {variable} to its path."
