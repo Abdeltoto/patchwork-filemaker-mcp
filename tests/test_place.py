@@ -4,7 +4,7 @@ import unittest
 from helpers import FIXTURES
 from patchwork import PatchworkError
 from patchwork.export import Export
-from patchwork.place import own_bounds, top_level
+from patchwork.place import own_bounds, place_field, top_level
 
 
 def placed(**kwargs):
@@ -52,6 +52,16 @@ class PlaceFieldTests(unittest.TestCase):
         self.assertNotIn("TabOrder", field)
         self.assertNotIn("EDIT-UUID", field)
         self.assertEqual(xml.count("<UUID>EDIT-UUID</UUID>"), 1)
+
+    def test_the_row_gap_is_copied_up_to_40_points(self):
+        text = (FIXTURES / "layout-export.xml").read_text(encoding="utf-8")
+        for notes_top, tier_top in ((110, 130), (115, 100)):
+            with self.subTest(gap=notes_top - 70):
+                moved = text.replace(
+                    '<Bounds top="70" left="10" bottom="100"', f'<Bounds top="{notes_top}" left="10" bottom="200"'
+                )
+                xml, _ = place_field(Export(moved), "Clients Details", "Clients::Loyalty Tier", "Email")
+                self.assertEqual(tops(xml)["Loyalty Tier"], tier_top)
 
     def test_right_is_refused_when_something_is_there(self):
         with self.assertRaisesRegex(PatchworkError, "would cover object 5"):
