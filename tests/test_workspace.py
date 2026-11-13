@@ -11,7 +11,7 @@ from unittest import mock
 from helpers import FIXTURES
 from patchwork import PatchworkError, ops
 from patchwork.mcp import serve
-from patchwork.workspace import Workspace
+from patchwork.workspace import Result, Workspace
 
 
 class FakeTool:
@@ -114,6 +114,20 @@ class WorkspaceTests(unittest.TestCase):
             Workspace.create(self.src, "Admin", True, self.tmp, runner=self.tool)
         self.assertEqual(Workspace.locate(self.tmp).version, 1)
         self.assertTrue((self.tmp / ".patchwork" / "v001.fmp12").is_file())
+
+
+class SummaryTests(unittest.TestCase):
+    def test_a_version_shows_40_changes_then_a_count(self):
+        changes = [f"+ script S{i}" for i in range(45)]
+        text = ops.describe(Result(3, "big", changes, Path("p003.xml"))).splitlines()
+        self.assertEqual(text[0], "v003  big")
+        self.assertEqual(text[1:41], [f"  + script S{i}" for i in range(40)])
+        self.assertEqual(text[41:], ["  ... and 5 more"])
+
+    def test_the_log_shows_10_changes_per_version(self):
+        history = [{"n": 1, "time": "t", "message": "m", "changes": [f"~ layout L{i}" for i in range(12)]}]
+        lines = ops.log(mock.Mock(log=lambda: history)).splitlines()
+        self.assertEqual(lines, ["v001  t  m"] + [f"        ~ layout L{i}" for i in range(10)])
 
 
 class McpTests(unittest.TestCase):

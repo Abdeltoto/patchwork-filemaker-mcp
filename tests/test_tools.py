@@ -72,6 +72,12 @@ class SafetyTests(unittest.TestCase):
                     )
             self.assertIn("open in FileMaker", str(caught.exception))
 
+    def test_a_missing_tool_names_its_variable(self):
+        with mock.patch.object(tools, "find_tool", return_value=None):
+            for name, variable in (("FMUpgradeTool", "FM_UPGRADE_TOOL"), ("FMDeveloperTool", "FM_DEVELOPER_TOOL")):
+                with self.assertRaisesRegex(PatchworkError, f"{name} not found.*set {variable} to its path"):
+                    tools.require_tool(name)
+
     def test_tool_in_the_current_folder_is_never_picked(self):
         with tempfile.TemporaryDirectory() as tmp:
             fake = Path(tmp) / ("FMUpgradeTool.exe" if os.name == "nt" else "FMUpgradeTool")
