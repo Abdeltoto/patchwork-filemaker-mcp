@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 
 from helpers import FIXTURES, mini_export
@@ -61,6 +63,13 @@ class ScriptTextTests(unittest.TestCase):
         self.assertIn('id="999"', script.build(self.export, f"Beep\n{line}", existing))
         with self.assertRaisesRegex(PatchworkError, "Unknown step for text: Sort Records"):
             script.build(self.export, line)
+
+    def test_every_supported_step_builds_the_recorded_xml(self):
+        recorded = json.loads((FIXTURES / "built-steps.json").read_text(encoding="utf-8"))
+        for line, expected in recorded.items():
+            with self.subTest(line=line):
+                xml = script.build(self.fields if line.startswith("Set Field") else self.export, line)
+                self.assertEqual(re.sub(r"<UUID>[^<]*</UUID>", "<UUID></UUID>", xml), expected)
 
     def test_names_that_do_not_exist_are_refused(self):
         with self.assertRaisesRegex(PatchworkError, "layout not found"):
