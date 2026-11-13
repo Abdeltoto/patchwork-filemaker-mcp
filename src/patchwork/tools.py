@@ -15,6 +15,8 @@ from patchwork import PatchworkError
 
 PASSWORD_ENV = "PATCHWORK_PASSWORD"
 KEY_ENV = "PATCHWORK_KEY"
+TIMEOUT_ENV = "PATCHWORK_TOOL_TIMEOUT"
+DEFAULT_TIMEOUT = 1800
 SECRET_FLAGS = {"-src_pwd", "-src_key", "-patch_key"}
 PATH_VARIABLES = {"FMUpgradeTool": "FM_UPGRADE_TOOL", "FMDeveloperTool": "FM_DEVELOPER_TOOL"}
 LOCAL_TOOLS = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local" / "share")) / "patchwork" / "fms-tools"
@@ -71,6 +73,19 @@ def password(no_password: bool) -> str:
             "Never put it in a file or on the command line."
         )
     return value
+
+
+def timeout() -> float:
+    value = os.environ.get(TIMEOUT_ENV)
+    if value is None:
+        return DEFAULT_TIMEOUT
+    try:
+        seconds = float(value)
+    except ValueError:
+        seconds = 0
+    if not seconds > 0:
+        raise PatchworkError(f"{TIMEOUT_ENV} must be a number of seconds above 0, got: {value}")
+    return seconds
 
 
 def redact(command: list[str]) -> list[str]:
@@ -178,7 +193,16 @@ class Runner:
     def run(self, command: list[str], output: Path | None = None, shown: list[str] | None = None) -> None:
         if not self.quiet:
             self.echo("$ " + " ".join(shown or redact(command)))
-        completed = subprocess.run(command, check=False, capture_output=self.quiet, text=True, errors="replace")
+        limit = timeout()
+        try:
+            completed = subprocess.run(
+                command, check=False, capture_output=self.quiet, text=True, errors="replace", timeout=limit
+            )
+        except subprocess.TimeoutExpired:
+            raise PatchworkError(
+                f"{Path(command[0]).stem} did not finish within {limit:g} s and was stopped. "
+                f"Is a FileMaker dialog waiting, or the file open elsewhere? Set {TIMEOUT_ENV} to wait longer."
+            ) from None
         failed = completed.returncode != 0 or (output is not None and not output.exists())
         if failed:
             details = ((completed.stdout or "") + (completed.stderr or "")).strip() if self.quiet else ""
