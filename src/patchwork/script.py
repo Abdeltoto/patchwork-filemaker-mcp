@@ -476,7 +476,7 @@ def build_step(export: Export, name: str, params: list[str], enabled: bool) -> s
             raise PatchworkError("Show Custom Dialog has at most 3 buttons.")
         labels += [""] * (3 - len(labels))
         button_xml = "".join(
-            f'<Parameter type="Button{i + 1}"{f" value=" + chr(34) + escape(b) + chr(34) if b else ""}>'
+            f'<Parameter type="Button{i + 1}"{" value=" + chr(34) + escape(b) + chr(34) if b else ""}>'
             f'<Boolean type="Commit" value="{i == 0}"></Boolean></Parameter>'
             for i, b in enumerate(labels)
         )

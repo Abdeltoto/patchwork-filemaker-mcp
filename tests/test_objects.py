@@ -1,7 +1,6 @@
 import unittest
 
 from helpers import mini_export
-
 from patchwork import PatchworkError, objects
 from patchwork.export import Export
 

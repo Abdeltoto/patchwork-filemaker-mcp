@@ -50,7 +50,7 @@ class Workspace:
     # ----- locate -----
 
     @staticmethod
-    def locate(project: Path | None = None) -> "Workspace":
+    def locate(project: Path | None = None) -> Workspace:
         if project is None and os.environ.get(WORKSPACE_ENV):
             project = Path(os.environ[WORKSPACE_ENV])
         if project is not None:
@@ -69,7 +69,7 @@ class Workspace:
         project: Path | None = None,
         force: bool = False,
         runner: Runner | None = None,
-    ) -> "Workspace":
+    ) -> Workspace:
         src = require_source(src)
         project = (project or Path.cwd()).resolve()
         root = project / FOLDER

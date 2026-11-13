@@ -11,7 +11,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from patchwork import PatchworkError, objects
+from patchwork import objects
 from patchwork.export import Export, unescape
 
 CDATA = re.compile(r"<!\[CDATA\[([\s\S]*?)\]\]>")

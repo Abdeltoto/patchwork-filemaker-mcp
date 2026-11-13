@@ -5,9 +5,7 @@ from pathlib import Path
 from unittest import mock
 
 import helpers  # noqa: F401
-
-from patchwork import PatchworkError
-from patchwork import tools
+from patchwork import PatchworkError, tools
 
 
 class SafetyTests(unittest.TestCase):

@@ -8,7 +8,6 @@ from pathlib import Path
 from unittest import mock
 
 import helpers  # noqa: F401
-
 from patchwork.cli import main
 
 

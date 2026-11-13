@@ -3,9 +3,7 @@ import unittest
 from pathlib import Path
 
 from helpers import TEAL, mini_export
-
-from patchwork import PatchworkError
-from patchwork import build
+from patchwork import PatchworkError, build
 
 
 class BuildTests(unittest.TestCase):

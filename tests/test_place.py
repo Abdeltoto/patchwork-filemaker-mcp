@@ -2,7 +2,6 @@ import re
 import unittest
 
 from helpers import FIXTURES
-
 from patchwork import PatchworkError
 from patchwork.export import Export
 from patchwork.place import own_bounds, top_level

@@ -3,7 +3,6 @@ import unittest
 from pathlib import Path
 
 from helpers import FIXTURES, mini_export
-
 from patchwork import PatchworkError
 from patchwork.export import Export
 

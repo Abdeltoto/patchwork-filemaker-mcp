@@ -44,7 +44,7 @@ class Brand:
     logo: Logo | None = None
 
     @classmethod
-    def load(cls, path: Path) -> "Brand":
+    def load(cls, path: Path) -> Brand:
         if not path.is_file():
             raise PatchworkError(f"Brand file not found: {path}")
         try:
@@ -54,7 +54,7 @@ class Brand:
         return cls.from_dict(data, path.parent)
 
     @classmethod
-    def from_dict(cls, data: dict, base: Path) -> "Brand":
+    def from_dict(cls, data: dict, base: Path) -> Brand:
         unknown = set(data) - {"$schema", "name", "colors", "fonts", "theme", "logo"}
         if unknown:
             raise PatchworkError(f"Unknown key(s) in brand file: {', '.join(sorted(unknown))}")

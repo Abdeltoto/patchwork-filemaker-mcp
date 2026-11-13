@@ -32,7 +32,7 @@ class Export:
         self.version = (attr(head.group(0), "version") if head else None) or "2.3.0.0"
 
     @classmethod
-    def load(cls, path: Path) -> "Export":
+    def load(cls, path: Path) -> Export:
         if not path.is_file():
             raise PatchworkError(f"Export not found: {path}")
         raw = path.read_bytes()

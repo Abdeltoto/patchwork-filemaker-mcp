@@ -1,7 +1,6 @@
 import unittest
 
 from helpers import mini_export
-
 from patchwork.uses import find_uses
 
 

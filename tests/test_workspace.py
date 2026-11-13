@@ -9,7 +9,6 @@ from pathlib import Path
 from unittest import mock
 
 from helpers import FIXTURES
-
 from patchwork import PatchworkError, ops
 from patchwork.mcp import serve
 from patchwork.workspace import Workspace

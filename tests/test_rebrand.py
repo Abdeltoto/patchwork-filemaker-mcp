@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 
 from helpers import FIXTURES
-
 from patchwork import PatchworkError
 from patchwork.rebrand import Brand, rebrand
 

@@ -17,7 +17,6 @@ import unittest
 from pathlib import Path
 
 import helpers  # noqa: F401  (puts src/ on the path)
-
 from patchwork import PatchworkError, objects, ops
 from patchwork.build import wrap
 from patchwork.mcp import serve
@@ -89,7 +88,10 @@ class RealFileTests(unittest.TestCase):
         after = self.current().layout("Clients Details").xml
         self.assertIn("<Data><![CDATA[Tier]]></Data>", after)
         self.assertEqual(after.count("<LayoutObject "), before.count("<LayoutObject ") + 2)
-        size = lambda xml: int(re.search(r'<Definition type="Body" [^>]*size="(\d+)"', xml).group(1))
+
+        def size(xml):
+            return int(re.search(r'<Definition type="Body" [^>]*size="(\d+)"', xml).group(1))
+
         self.assertGreater(size(after), size(before))
 
     def test_value_list_add_replace_delete(self):

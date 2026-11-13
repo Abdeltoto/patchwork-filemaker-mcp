@@ -53,3 +53,5 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+# ruff format keeps lines to 120; the longer ones left are regexes and XML templates it does not split.
+ignore = ["E501"]

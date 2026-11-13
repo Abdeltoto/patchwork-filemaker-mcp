@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from patchwork import PatchworkError, objects, place, script
 from patchwork.build import (
@@ -14,8 +14,10 @@ from patchwork.build import (
     field_xml,
     image_calc,
     layouts_patch,
-    palette as theme_palette,
     theme_replace,
+)
+from patchwork.build import (
+    palette as theme_palette,
 )
 from patchwork.export import Export, unescape
 from patchwork.uses import find_uses
@@ -186,7 +188,7 @@ def steps_xml(export: Export, steps: str, existing: str = "") -> str:
 def check_steps(name: str, want: list[str]) -> Callable[[Export], str | None]:
     def check(export: Export) -> str | None:
         got = script.normalized(objects.script_steps(export, name)[1])
-        for i, (w, g) in enumerate(zip(want, got), 1):
+        for i, (w, g) in enumerate(zip(want, got, strict=False), 1):
             if w != g:
                 return f"step {i} came back as `{g}` instead of `{w}` (FileMaker dropped or changed a parameter)"
         if len(want) != len(got):

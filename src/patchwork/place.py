@@ -26,13 +26,13 @@ class Box:
     bottom: float
     right: float
 
-    def moved(self, dy: float, dx: float) -> "Box":
+    def moved(self, dy: float, dx: float) -> Box:
         return Box(self.top + dy, self.left + dx, self.bottom + dy, self.right + dx)
 
-    def grown(self, dy: float) -> "Box":
+    def grown(self, dy: float) -> Box:
         return Box(self.top, self.left, self.bottom + dy, self.right)
 
-    def union(self, other: "Box") -> "Box":
+    def union(self, other: Box) -> Box:
         return Box(
             min(self.top, other.top),
             min(self.left, other.left),
@@ -40,7 +40,7 @@ class Box:
             max(self.right, other.right),
         )
 
-    def overlaps(self, other: "Box") -> bool:
+    def overlaps(self, other: Box) -> bool:
         return (
             self.top < other.bottom and other.top < self.bottom and self.left < other.right and other.left < self.right
         )
@@ -152,7 +152,9 @@ def place_field(
     blocking = [o for o in staying if o.box.overlaps(placed) and not stretches(o)]
     if blocking:
         names = [re.search(r'<FieldReference [^>]*\bname="([^"]*)"', o.xml) for o in blocking]
-        what = ", ".join(f"field {n.group(1)}" if n else f"object {o.id}" for n, o in zip(names, blocking))
+        what = ", ".join(
+            f"field {n.group(1)}" if n else f"object {o.id}" for n, o in zip(names, blocking, strict=False)
+        )
         raise PatchworkError(
             f"No room {side} {near!r}: it would cover {what}. "
             f"Try side={'right' if side == 'below' else 'below'} or another field."
