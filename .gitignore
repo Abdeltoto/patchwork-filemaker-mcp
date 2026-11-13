@@ -3,10 +3,12 @@
 *.fmp12.bak
 raw/
 *.log
+.patchwork/
 
 # Secrets
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
