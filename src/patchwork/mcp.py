@@ -18,6 +18,7 @@ from patchwork.workspace import Workspace
 
 PROTOCOL = "2025-06-18"
 OUTSIDE_ENV = "PATCHWORK_ALLOW_OUTSIDE"
+PARSE_ERROR, METHOD_NOT_FOUND, INTERNAL_ERROR = -32700, -32601, -32603
 INSTRUCTIONS = """Patchwork edits FileMaker (.fmp12) files through Claris FMUpgradeTool, on a versioned working copy.
 Start with patchwork_open, then read before you write: patchwork_list and patchwork_show give the real XML of any object.
 Every edit creates a new version, is re-exported and checked; a change FMUpgradeTool silently skipped is refused.
@@ -344,14 +345,14 @@ class Server:
                     text, error = str(exc), True
                 result = {"content": [{"type": "text", "text": text}], "isError": error}
             else:
-                return {
-                    "jsonrpc": "2.0",
-                    "id": ident,
-                    "error": {"code": -32601, "message": f"Method not found: {method}"},
-                }
+                return rpc_error(ident, METHOD_NOT_FOUND, f"Method not found: {method}")
         except Exception as exc:  # never let one call kill the server
-            return {"jsonrpc": "2.0", "id": ident, "error": {"code": -32603, "message": f"{type(exc).__name__}: {exc}"}}
+            return rpc_error(ident, INTERNAL_ERROR, f"{type(exc).__name__}: {exc}")
         return {"jsonrpc": "2.0", "id": ident, "result": result}
+
+
+def rpc_error(ident: Any, code: int, message: str) -> dict:
+    return {"jsonrpc": "2.0", "id": ident, "error": {"code": code, "message": message}}
 
 
 def serve(project: Path | None = None, stdin=None, stdout=None) -> int:
@@ -365,7 +366,7 @@ def serve(project: Path | None = None, stdin=None, stdout=None) -> int:
         try:
             message = json.loads(line)
         except json.JSONDecodeError:
-            reply = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
+            reply = rpc_error(None, PARSE_ERROR, "Parse error")
         else:
             reply = server.handle(message)
         if reply is not None:
