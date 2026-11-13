@@ -368,9 +368,7 @@ def target_field(export: Export, text: str) -> str:
     match = re.fullmatch(r"(.+?::.+?)(?:\[(.+)\])?", text.strip())
     if not match:
         raise PatchworkError(f"Expected a field as Occurrence::Field, got: {text}")
-    from patchwork.place import field_target
-
-    field_id, name, field_uuid, to_ref = field_target(export, match.group(1))
+    field_id, name, field_uuid, to_ref = objects.field_target(export, match.group(1))
     rep = calc_xml(match.group(2) or "1", 10)
     return (
         f'<Parameter type="FieldReference"><FieldReference id="{field_id}" name="{escape(name)}" UUID="{field_uuid}">'

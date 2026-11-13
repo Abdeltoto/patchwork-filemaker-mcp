@@ -12,7 +12,8 @@ from dataclasses import dataclass
 from typing import cast
 
 from patchwork import PatchworkError, objects
-from patchwork.export import Export, escape, unescape
+from patchwork.export import Export, escape
+from patchwork.objects import field_target
 
 OBJECT = re.compile(r"(?m)^(\t*)<LayoutObject [^>]*>[\s\S]*?^\1</LayoutObject>")
 BOUNDS = re.compile(r'<Bounds top="(-?[\d.]+)" left="(-?[\d.]+)" bottom="(-?[\d.]+)" right="(-?[\d.]+)"></Bounds>')
@@ -90,17 +91,6 @@ def top_level(part: str, offset: int) -> list[Obj]:
                 Obj(offset + match.start(), offset + match.end(), xml, ident.group(1) if ident else "", own_bounds(xml))
             )
     return found
-
-
-def field_target(export: Export, field: str) -> tuple[str, str, str, str]:
-    """(field id, field name, field UUID, TableOccurrenceReference) for TO::Field."""
-    occurrence, name = objects.split_field(field)
-    to = objects.find(export, "table-occurrence", occurrence)
-    base = re.search(r'<BaseTableReference [^>]*\bname="([^"]*)"', to.xml)
-    if not base:
-        raise PatchworkError(f"Table occurrence {occurrence} has no base table in the export.")
-    field_id, field_uuid = export.field(unescape(base.group(1)), name)
-    return field_id, name, field_uuid, export.table_occurrence(occurrence)
 
 
 def place_field(

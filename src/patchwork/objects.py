@@ -112,6 +112,17 @@ def find(export: Export, kind_name: str, name: str) -> Item:
     raise PatchworkError(f"{kind(kind_name).name} not found: {name}")
 
 
+def field_target(export: Export, field: str) -> tuple[str, str, str, str]:
+    """(field id, field name, field UUID, TableOccurrenceReference) for TO::Field."""
+    occurrence, name = split_field(field)
+    to = find(export, "table-occurrence", occurrence)
+    base = re.search(r'<BaseTableReference [^>]*\bname="([^"]*)"', to.xml)
+    if not base:
+        raise PatchworkError(f"Table occurrence {occurrence} has no base table in the export.")
+    field_id, field_uuid = export.field(unescape(base.group(1)), name)
+    return field_id, name, field_uuid, export.table_occurrence(occurrence)
+
+
 def own_uuid(block: str) -> str:
     try:
         return layout_uuid(block)
