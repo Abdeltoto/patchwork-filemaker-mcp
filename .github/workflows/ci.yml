@@ -22,6 +22,32 @@ jobs:
       - run: ruff format --check src tests
       - run: mypy
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+      - name: Secrets in the whole history (gitleaks)
+        run: |
+          curl -sSfL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git . --redact --no-banner
+      - run: pip install pip-audit==2.10.1 bandit==1.9.4
+      - name: Known vulnerabilities in what the package installs (pip-audit)
+        run: |
+          python -m venv /tmp/app
+          /tmp/app/bin/pip install ".[image]"
+          /tmp/app/bin/pip freeze --exclude filemaker-patchwork > /tmp/requirements.txt
+          pip-audit -r /tmp/requirements.txt
+      # The five low-severity findings are false positives (variable names, the subprocess import).
+      - name: Static security analysis (bandit, medium severity and above)
+        run: bandit -r src --severity-level medium
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
