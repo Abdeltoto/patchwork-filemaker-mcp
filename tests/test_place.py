@@ -63,6 +63,34 @@ class PlaceFieldTests(unittest.TestCase):
                 xml, _ = place_field(Export(moved), "Clients Details", "Clients::Loyalty Tier", "Email")
                 self.assertEqual(tops(xml)["Loyalty Tier"], tier_top)
 
+    def test_right_places_the_field_and_label_beside_without_moving_anything(self):
+        text = (FIXTURES / "layout-export.xml").read_text(encoding="utf-8")
+        clear = text.replace('<Bounds top="20" left="210" bottom="70"', '<Bounds top="200" left="210" bottom="250"')
+        xml, _ = place_field(Export(clear), "Clients Details", "Clients::Loyalty Tier", "Email", side="right")
+        self.assertEqual(xml.count('<Bounds top="20" left="210" bottom="40" right="400"></Bounds>'), 1)
+        self.assertEqual(xml.count('<Bounds top="40" left="210" bottom="70" right="400"></Bounds>'), 1)
+        before, after = tops(clear), tops(xml)
+        self.assertEqual({k: after[k] for k in before}, before)
+        self.assertIn('<ObjectList membercount="7">', xml)
+        self.assertIn('size="300" absolute="0"', xml)
+
+    def test_right_is_refused_past_the_layout_edge(self):
+        text = (FIXTURES / "layout-export.xml").read_text(encoding="utf-8").replace('width="600"', 'width="390"')
+        with self.assertRaisesRegex(PatchworkError, "^No room right of 'Email': it would go past the edge"):
+            place_field(Export(text), "Clients Details", "Clients::Loyalty Tier", "Email", side="right")
+
+    def test_side_must_be_below_or_right(self):
+        with self.assertRaisesRegex(PatchworkError, r"^side is below or right\.$"):
+            placed(side="above")
+
+    def test_below_is_refused_when_a_field_is_in_the_way(self):
+        text = (FIXTURES / "layout-export.xml").read_text(encoding="utf-8")
+        text = text.replace('<Bounds top="70" left="10" bottom="100"', '<Bounds top="60" left="10" bottom="100"')
+        with self.assertRaisesRegex(
+            PatchworkError, "^No room below 'Email': it would cover field Notes. Try side=right"
+        ):
+            place_field(Export(text), "Clients Details", "Clients::Loyalty Tier", "Email")
+
     def test_right_is_refused_when_something_is_there(self):
         with self.assertRaisesRegex(PatchworkError, "would cover object 5"):
             placed(side="right")
