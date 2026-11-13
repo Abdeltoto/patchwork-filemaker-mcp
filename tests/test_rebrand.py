@@ -5,44 +5,33 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import FIXTURES
+from helpers import FakeTool
 from patchwork import PatchworkError
 from patchwork.rebrand import Brand, rebrand
 
 
-class FakeRunner:
-    """Stands in for FMUpgradeTool: applies the effect of each patch to the fixture export."""
+def rebrand_tool(ignore_theme=False):
+    """Fake Claris tool that applies the effect of each rebrand patch to the fixture export."""
 
-    def __init__(self, ignore_theme=False):
-        self.text = (FIXTURES / "mini-export.xml").read_text(encoding="utf-8")
-        self.ignore_theme = ignore_theme
-        self.patches = []
-
-    def generate_guids(self, src, dest, force=False):
-        shutil.copyfile(src, dest)
-
-    def export_xml(self, src, out, force=False):
-        out.write_text(self.text, encoding="utf-8")
-
-    def apply(self, src, patch, dest, force=False):
-        xml = patch.read_text(encoding="utf-8")
-        self.patches.append(xml)
-        if 'type="Theme"' in xml and not self.ignore_theme:
+    def effect(xml, text):
+        if 'type="Theme"' in xml and not ignore_theme:
             name = re.search(r'<Theme Display="([^"]*)"', xml).group(1)
-            self.text = self.text.replace('Display="Apex Blue"', f'Display="{name}"')
+            text = text.replace('Display="Apex Blue"', f'Display="{name}"')
         added = re.search(r'<Field id="(\d+)" name="([^"]*)"', xml)
         if added:
             field = f'<Field id="{added.group(1)}" name="{added.group(2)}" fieldtype="Calculated" datatype="Binary">\n\t\t\t\t\t\t\t<UUID>BRAND-UUID</UUID>\n\t\t\t\t\t\t</Field>\n\t\t\t\t\t'
-            fields = self.text.index("<FieldsForTables")
-            end = self.text.index("</ObjectList>", fields)
-            self.text = self.text[:end] + field + self.text[end:]
+            fields = text.index("<FieldsForTables")
+            end = text.index("</ObjectList>", fields)
+            text = text[:end] + field + text[end:]
         if 'type="Layout"' in xml:
-            self.text = re.sub(
+            text = re.sub(
                 r'<FieldReference id="24" name="Logo"( repetition="1")? UUID="LOGO-UUID">',
                 r'<FieldReference id="41" name="Brand Logo"\1 UUID="BRAND-UUID">',
-                self.text,
+                text,
             )
-        shutil.copyfile(src, dest)
+        return text
+
+    return FakeTool(effect)
 
 
 class RebrandTests(unittest.TestCase):
@@ -62,7 +51,7 @@ class RebrandTests(unittest.TestCase):
         return Brand.load(path)
 
     def test_full_rebrand_with_logo(self):
-        runner = FakeRunner()
+        runner = rebrand_tool()
         brand = self.brand(logo={"image": "logo.png", "replace": "Admin::Logo"})
         report = rebrand(self.src, self.tmp / "out.fmp12", brand, runner, say=lambda _: None)
         self.assertEqual(report.theme, "Acme")
@@ -76,13 +65,13 @@ class RebrandTests(unittest.TestCase):
 
     def test_silently_ignored_patch_is_detected(self):
         with self.assertRaises(PatchworkError) as caught:
-            rebrand(self.src, self.tmp / "out.fmp12", self.brand(), FakeRunner(ignore_theme=True), say=lambda _: None)
+            rebrand(self.src, self.tmp / "out.fmp12", self.brand(), rebrand_tool(ignore_theme=True), say=lambda _: None)
         self.assertIn("missing", str(caught.exception))
         self.assertFalse((self.tmp / "out.fmp12").exists())
 
     def test_source_is_never_the_destination(self):
         with self.assertRaisesRegex(PatchworkError, "The destination is the source file"):
-            rebrand(self.src, self.src, self.brand(), FakeRunner(), say=lambda _: None)
+            rebrand(self.src, self.src, self.brand(), rebrand_tool(), say=lambda _: None)
 
     def test_brand_file_is_validated(self):
         with self.assertRaisesRegex(PatchworkError, "Unknown key\\(s\\) in brand file: colour"):

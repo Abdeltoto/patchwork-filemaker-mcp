@@ -8,28 +8,10 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from helpers import FIXTURES
+from helpers import FakeTool
 from patchwork import PatchworkError, ops
 from patchwork.mcp import serve
 from patchwork.workspace import Result, Workspace
-
-
-class FakeTool:
-    """Stands in for FMUpgradeTool + FMDeveloperTool. `effect(patch, text)` returns the new export."""
-
-    def __init__(self, effect=None):
-        self.text = (FIXTURES / "mini-export.xml").read_text(encoding="utf-8")
-        self.effect = effect or (lambda patch, text: text)
-
-    def generate_guids(self, src, dest, force=False):
-        shutil.copyfile(src, dest)
-
-    def export_xml(self, src, out, force=False):
-        out.write_text(self.text, encoding="utf-8")
-
-    def apply(self, src, patch, dest, force=False):
-        self.text = self.effect(patch.read_text(encoding="utf-8"), self.text)
-        shutil.copyfile(src, dest)
 
 
 def add_value_list_effect(patch, text):
