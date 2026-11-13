@@ -176,7 +176,7 @@ class RealFileTests(unittest.TestCase):
 
     def test_delete_a_referenced_layout_needs_force(self):
         self.assertIn("script Set Dates", ops.uses(self.ws, "layout", "Dev Invoices"))
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, r"Not deleted: these would point at nothing"):
             ops.delete(self.ws, "layout", "Dev Invoices")
         self.assertEqual(Workspace.locate(self.tmp).version, 0)
         text = ops.delete(self.ws, "layout", "Dev Invoices", force=True)
@@ -206,7 +206,7 @@ class RealFileTests(unittest.TestCase):
         before = self.source.read_bytes()
         ops.add_value_list(self.ws, "IT Undo", ["A"])
         self.assertEqual(ops.undo(Workspace.locate(self.tmp)), "Back to v000")
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, r"^The destination is the source file\."):
             ops.save(Workspace.locate(self.tmp), str(self.source))
         out = self.tmp / "saved.fmp12"
         ops.save(Workspace.locate(self.tmp), str(out))

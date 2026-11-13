@@ -26,7 +26,7 @@ class ObjectTests(unittest.TestCase):
 
     def test_show_step_finds_a_real_example(self):
         self.assertIn('name="# (comment)"', objects.show(self.export, "step", "# (comment)"))
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, r"^No script in this file uses the step 'Set Field'\."):
             objects.show(self.export, "step", "Set Field")
 
     def test_add_value_list_gets_next_id_catalog_and_uuid(self):

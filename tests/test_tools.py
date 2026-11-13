@@ -43,7 +43,7 @@ class SafetyTests(unittest.TestCase):
             self.assertEqual(tools.password(False), "secret")
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertEqual(tools.password(True), "")
-            with self.assertRaises(PatchworkError):
+            with self.assertRaisesRegex(PatchworkError, rf"^Set {tools.PASSWORD_ENV} in your shell"):
                 tools.password(False)
 
     def test_runner_never_prints_the_password(self):
