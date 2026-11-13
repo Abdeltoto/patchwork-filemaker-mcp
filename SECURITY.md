@@ -16,6 +16,10 @@ FMUpgradeTool and FMDeveloperTool only accept the password and the encryption ke
 - Patchwork has no network code and no runtime dependency.
 - Through MCP, an agent cannot replace a file or delete a workspace outside the project folder (`force` is refused there). Set `PATCHWORK_ALLOW_OUTSIDE=1` to lift this.
 
+## Known limit: Pillow on Python 3.10
+
+The optional `image` extra (`pip install "filemaker-patchwork[image]"`, used only to resize a logo you choose) needs Pillow. Every Pillow release before 13.0 has known vulnerabilities, and Pillow 13 needs Python 3.11. On Python 3.10 Patchwork can only require Pillow 12.3, which still has them. Use Python 3.11 or later if you install the `image` extra.
+
 ## Reporting a vulnerability
 
 Please do not open a public issue. Use [GitHub private vulnerability reporting](https://github.com/Abdeltoto/patchwork-filemaker-mcp/security/advisories/new). You will get an answer within a week.
