@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import re
 import shutil
 import tempfile
@@ -86,7 +87,7 @@ class WorkspaceTests(unittest.TestCase):
     def test_undo_and_save(self):
         ops.add_value_list(self.ws, "Status", ["Active"])
         self.assertEqual(ops.undo(self.ws), "Back to v000")
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "The destination is the source file"):
             self.ws.save(self.src)
         self.assertIn("Saved v000", ops.save(self.ws, str(self.tmp / "out.fmp12")))
 
@@ -107,8 +108,11 @@ class WorkspaceTests(unittest.TestCase):
         self.assertIn("Warning, review these", text)
 
     def test_reopening_needs_force(self):
-        with self.assertRaises(PatchworkError):
+        ops.add_value_list(self.ws, "Status", ["Active"])
+        with self.assertRaisesRegex(PatchworkError, "A workspace already exists here for App.fmp12"):
             Workspace.create(self.src, "Admin", True, self.tmp, runner=self.tool)
+        self.assertEqual(Workspace.locate(self.tmp).version, 1)
+        self.assertTrue((self.tmp / ".patchwork" / "v001.fmp12").is_file())
 
 
 class McpTests(unittest.TestCase):
@@ -160,15 +164,17 @@ class McpTests(unittest.TestCase):
             Workspace.create(src, "Admin", True, project, runner=FakeTool())
             def call(ident, name, arguments):
                 return {"jsonrpc": "2.0", "id": ident, "method": "tools/call", "params": {"name": name, "arguments": arguments}}
-            replies = self.converse(
-                call(1, "patchwork_save", {"dest": str(other), "force": True}),
-                call(2, "patchwork_open", {"source": str(other), "account": "Admin", "no_password": True,
-                                           "project": str(outside), "force": True}),
-                call(3, "patchwork_save", {"dest": str(project / "Saved.fmp12"), "force": True}),
-                project=project)
-            self.assertTrue(replies[0]["result"]["isError"])
+            env = {k: v for k, v in os.environ.items() if k != "PATCHWORK_ALLOW_OUTSIDE"}
+            with mock.patch.dict(os.environ, env, clear=True):
+                replies = self.converse(
+                    call(1, "patchwork_save", {"dest": str(other), "force": True}),
+                    call(2, "patchwork_open", {"source": str(other), "account": "Admin", "no_password": True,
+                                               "project": str(outside), "force": True}),
+                    call(3, "patchwork_save", {"dest": str(project / "Saved.fmp12"), "force": True}),
+                    project=project)
+            self.assertIn("outside the project folder", replies[0]["result"]["content"][0]["text"])
             self.assertEqual(other.read_bytes(), b"other client")
-            self.assertTrue(replies[1]["result"]["isError"])
+            self.assertIn("outside the project folder", replies[1]["result"]["content"][0]["text"])
             self.assertTrue((outside / ".patchwork" / "state.json").is_file())
             self.assertFalse(replies[2]["result"]["isError"], replies[2])
             self.assertTrue((project / "Saved.fmp12").is_file())
