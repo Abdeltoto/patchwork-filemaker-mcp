@@ -31,6 +31,11 @@ FIELD_TYPES = {
 }
 
 
+def rgba_hex(match: re.Match) -> str:
+    """Hex color of an RGBA match: FileMaker writes each channel as a percentage."""
+    return "".join(f"{round(float(match.group(i)) * 2.55):02X}" for i in (1, 2, 3))
+
+
 def recolor(css: str, colors: dict[str, str]) -> str:
     """Swap hex colors inside FileMaker rgba(r%,g%,b%,a) values. Alpha is kept."""
     table = {normalize_hex(k): normalize_hex(v) for k, v in colors.items()}
@@ -38,8 +43,7 @@ def recolor(css: str, colors: dict[str, str]) -> str:
         return css
 
     def repl(match: re.Match) -> str:
-        rgb = "".join(f"{round(float(match.group(i)) * 2.55):02X}" for i in (1, 2, 3))
-        new = table.get(rgb)
+        new = table.get(rgba_hex(match))
         if not new:
             return match.group(0)
         parts = [int(new[i : i + 2], 16) / 255 * 100 for i in (0, 2, 4)]
@@ -51,7 +55,7 @@ def recolor(css: str, colors: dict[str, str]) -> str:
 
 def palette(css: str) -> list[tuple[str, int]]:
     """Hex colors used in a block of FileMaker CSS, most frequent first."""
-    found = ["".join(f"{round(float(m.group(i)) * 2.55):02X}" for i in (1, 2, 3)) for m in RGBA.finditer(css)]
+    found = [rgba_hex(m) for m in RGBA.finditer(css)]
     counts: dict[str, int] = {}
     for color in found:
         counts[color] = counts.get(color, 0) + 1
