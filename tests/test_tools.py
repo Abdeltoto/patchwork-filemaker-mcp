@@ -19,7 +19,7 @@ class SafetyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             src = Path(tmp) / "App.fmp12"
             src.write_bytes(b"x")
-            with self.assertRaises(PatchworkError):
+            with self.assertRaisesRegex(PatchworkError, "The destination is the source file"):
                 tools.require_copy(src, Path(tmp) / "APP.fmp12" if os.name == "nt" else src, force=True)
 
     def test_copy_refuses_to_overwrite_without_force(self):
@@ -27,7 +27,7 @@ class SafetyTests(unittest.TestCase):
             src, dest = Path(tmp) / "a.fmp12", Path(tmp) / "b.fmp12"
             src.write_bytes(b"x")
             dest.write_bytes(b"y")
-            with self.assertRaises(PatchworkError):
+            with self.assertRaisesRegex(PatchworkError, "already exists. Pass --force"):
                 tools.require_copy(src, dest, force=False)
             self.assertEqual(tools.require_copy(src, dest, force=True), dest.resolve())
 

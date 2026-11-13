@@ -62,8 +62,12 @@ class CliTests(unittest.TestCase):
             self.assertIn('args = ["-m", "patchwork", "mcp"]', (Path(tmp) / ".codex" / "config.toml").read_text(encoding="utf-8"))
 
     def test_help_lists_the_editing_commands(self):
-        with self.assertRaises(SystemExit):
-            run("--help")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), self.assertRaises(SystemExit) as caught:
+            main(["--help"])
+        self.assertEqual(caught.exception.code, 0)
+        for command in ("open", "add-field", "add-script", "set-steps", "place-field", "delete", "undo", "save"):
+            self.assertRegex(out.getvalue(), rf"(?m)^ {{4}}{command} ")
 
 
 if __name__ == "__main__":

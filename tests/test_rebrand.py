@@ -78,15 +78,15 @@ class RebrandTests(unittest.TestCase):
         self.assertFalse((self.tmp / "out.fmp12").exists())
 
     def test_source_is_never_the_destination(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "The destination is the source file"):
             rebrand(self.src, self.src, self.brand(), FakeRunner(), say=lambda _: None)
 
     def test_brand_file_is_validated(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Unknown key\\(s\\) in brand file: colour"):
             self.brand(colour={"a": "b"})
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Logo image not found"):
             self.brand(logo={"image": "missing.png", "replace": "Admin::Logo"})
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "6-digit hex value like 2F5D50: BLUE"):
             self.brand(colors={"0091CE": "blue"})
 
 

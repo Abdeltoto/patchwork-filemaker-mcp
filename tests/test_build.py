@@ -22,7 +22,7 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(build.palette(css), [("0091CE", 2), ("FFFFFF", 1)])
 
     def test_recolor_rejects_a_bad_color(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "6-digit hex value like 2F5D50: TEAL"):
             build.recolor("", {"0091CE": "teal"})
 
     def test_theme_patch_replaces_by_uuid_with_new_colors_fonts_and_name(self):
@@ -41,7 +41,7 @@ class BuildTests(unittest.TestCase):
         self.assertIn('<Field id="41" name="Status" fieldtype="Normal" datatype="Text"', patch)
 
     def test_add_field_refuses_an_existing_name(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Admin::Logo already exists"):
             build.field_xml(self.export, "Admin", "Logo", "Container")
 
     def test_calc_field_carries_its_context(self):
@@ -51,7 +51,7 @@ class BuildTests(unittest.TestCase):
         self.assertIn('name="Admin" UUID="TO-UUID"', field)
 
     def test_calc_too_long_is_refused(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Calculation too long"):
             build.field_xml(self.export, "Admin", "Big", "Text", calc="x" * (build.CALC_MAX_CHARS + 1))
 
     def test_image_calc_embeds_the_png(self):
@@ -69,11 +69,11 @@ class BuildTests(unittest.TestCase):
         self.assertNotIn("PLAIN-UUID", patch)
 
     def test_layouts_patch_rejects_unknown_layouts(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Layout not found: Missing"):
             build.layouts_patch(self.export, ["Missing"])
 
     def test_swap_refuses_fields_from_two_tables(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "same table"):
             build.layouts_patch(self.export, None, {}, {}, ("Admin::Logo", "Other::Logo"))
 
     def test_extract_layout_wraps_the_full_block(self):

@@ -41,12 +41,14 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(self.export.field_references("NEW-UUID"), 0)
 
     def test_unknown_names_raise_clear_errors(self):
-        for call in (lambda: self.export.layout("Nope"), lambda: self.export.field("Admin", "Nope"), lambda: self.export.field_catalog("Nope")):
-            with self.assertRaises(PatchworkError):
+        for call, message in ((lambda: self.export.layout("Nope"), "Layout not found: Nope"),
+                              (lambda: self.export.field("Admin", "Nope"), "Field not found: Admin::Nope"),
+                              (lambda: self.export.field_catalog("Nope"), "Base table not found: Nope")):
+            with self.assertRaisesRegex(PatchworkError, message):
                 call()
 
     def test_rejects_a_non_export(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "not a FileMaker Save-as-XML export"):
             Export("<FMUpgradeToolPatch/>")
 
     def test_loads_utf16_exports(self):

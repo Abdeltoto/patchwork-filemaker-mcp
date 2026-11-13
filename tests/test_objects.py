@@ -44,7 +44,7 @@ class ObjectTests(unittest.TestCase):
         self.assertIn("<Display>Hello ( who )</Display>", action)
 
     def test_add_refuses_duplicates(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "A value-list named 'Industries' already exists"):
             objects.add_object(self.export, "value-list", objects.value_list_xml("Industries", ["x"]))
 
     def test_add_script_with_steps_renumbers_and_renews(self):
@@ -76,9 +76,9 @@ class ObjectTests(unittest.TestCase):
         self.assertIn('<BaseTableReference id="129" name="Admin"', field)
 
     def test_unsupported_operations_are_refused(self):
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Replacing a script is not supported"):
             objects.replace_object(self.export, "script", "Close Window", "<Script></Script>")
-        with self.assertRaises(PatchworkError):
+        with self.assertRaisesRegex(PatchworkError, "Deleting a theme is not supported"):
             objects.delete_object(self.export, "theme", "Apex Blue")
 
     def test_diff_reports_added_changed_and_deleted(self):
