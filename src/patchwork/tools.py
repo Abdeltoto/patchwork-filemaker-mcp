@@ -92,6 +92,7 @@ def redact(command: list[str]) -> list[str]:
     shown, hide = [], False
     for part in command:
         shown.append("***" if hide else part)
+        # `and not hide`: a password that happens to read "-src_key" is hidden, and does not hide the next part.
         hide = part in SECRET_FLAGS and not hide
     return shown
 
@@ -169,6 +170,7 @@ class Runner:
         if force:
             command.append("-f")
         shown = command.copy()
+        # FMDeveloperTool takes the password as a positional argument after the account, so redact() cannot see it.
         shown[4] = "***"
         self.run(command, out, shown)
 

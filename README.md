@@ -38,6 +38,12 @@ Free and open source. Works with Claude Code, Cursor, Codex and Antigravity.
 
 <p align="center"><a href="https://youtu.be/AkFhBpB0YYY"><img src="https://raw.githubusercontent.com/Abdeltoto/patchwork-filemaker-mcp/main/docs/images/video-card.jpg" alt="Watch the 90-second Patchwork intro on YouTube" width="80%"></a><br><sub>▶ <a href="https://youtu.be/AkFhBpB0YYY">Watch the 90-second intro on YouTube</a> · <a href="https://youtu.be/g5UkJLiYAhA">Version française</a></sub></p>
 
+## Requirements
+
+- Python 3.10 or later, on Windows, macOS or Linux.
+- The Claris command-line tools FMUpgradeTool and FMDeveloperTool. They come with the FileMaker Server installer (the free trial works), and no server has to run: [install the Claris tools](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/install-fmupgradetool.md). Verified with FileMaker 2026 (26.0.3).
+- A closed `.fmp12` and a Full Access account.
+
 ## Quick start
 
 Three commands, then you just talk to your agent.
@@ -99,7 +105,7 @@ One command sets everything up. Run `patchwork init .` in your project folder, n
 | ⌨️ **Codex** | `.codex/config.toml` · `AGENTS.md` · `.agents/skills/` | Trust the project when Codex asks |
 | <img src="https://cdn.simpleicons.org/google/4285F4" width="16"> **Antigravity** | `.agents/mcp_config.json` · `AGENTS.md` · `.agents/skills/` | Open the folder as a workspace |
 
-Every agent gets the same 21 tools through `patchwork mcp`, a stdio MCP server. Your file's password stays yours: set it once in your shell with `PATCHWORK_PASSWORD`, and agents never see it. Manual setup and the full tool list: [AI agents](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/ai-agents.md).
+Every agent gets the same 21 tools through `patchwork mcp`, a stdio MCP server. Your file's password stays yours: set it once in your shell with `PATCHWORK_PASSWORD`, and agents never see it. Manual setup: [AI agents](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/ai-agents.md). Every tool, its parameters, answers and errors: [MCP tools reference](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/docs/mcp-tools.md).
 
 ## What it can change
 
@@ -126,7 +132,8 @@ What FMUpgradeTool cannot do (record data, a brand-new theme, a single layout ob
 Prefer the terminal? Everything the agent does is a plain command you can run yourself:
 
 ```bash
-patchwork open "Invoice.fmp12" --account Admin     # working copy, version v000
+export PATCHWORK_PASSWORD='...'                     # Windows: $env:PATCHWORK_PASSWORD = '...'
+patchwork open "Invoice.fmp12" --account Admin     # working copy, version v000 (--no-password if the account has none)
 patchwork add-field Clients "Loyalty Tier"
 patchwork add-value-list "Loyalty Tiers" Bronze Silver Gold
 patchwork log                                       # every version and what changed
@@ -145,12 +152,14 @@ patchwork save "Invoice v2.fmp12"
 | `status`, `log` | Current version, and every version with what changed |
 | `ls [KIND] [TABLE]` | Lists layouts, scripts, value lists, custom functions, themes, tables, fields |
 | `show KIND NAME` | Prints a script as FileMaker text (`--xml` for XML), anything else as XML. `show step NAME` prints a real example of a step |
+| `palette [--theme NAME]` | Colors a theme uses, most frequent first |
 | `add-field TABLE NAME` | Adds a field: `--type`, `--calc`, `--global`, `--image logo.png` |
 | `add-value-list NAME VALUES...` | Adds a custom value list |
 | `add-custom-function NAME --calc` | Adds a custom function, with `--param` |
 | `add-script NAME STEPS.txt` | Creates a script from FileMaker script text (or `<Step>` XML) |
 | `set-steps`, `append-steps` | Rewrites a script with edited text from `show`, or adds steps at the end |
 | `place-field LAYOUT TO::FIELD --near FIELD` | Puts a field on a layout below another one, with a copy of its look and label. `--side right`, `--label` |
+| `add KIND FILE.xml` | Adds a value list or a custom function from XML |
 | `replace KIND NAME FILE.xml` | Replaces an object with your edited version of `show` |
 | `uses KIND NAME` | Lists what references an object, and where its name appears in calculations |
 | `delete KIND NAME` | Deletes a script, layout, value list, custom function or field. Refused while other objects reference it, unless `--force` |
@@ -161,11 +170,54 @@ patchwork save "Invoice v2.fmp12"
 | `rebrand SRC DEST --brand brand.json` | One shot: colors, fonts, logo and theme name on a whole solution |
 | `mcp` | The MCP server for agents |
 | `init DIR` | Wires a folder for Claude Code, Cursor, Codex and Antigravity |
-| `doctor` | Shows which Claris tools Patchwork found |
+| `doctor` | Shows which Claris tools Patchwork found. Exit code 2 if one is missing |
+| `tool guids\|export\|validate\|apply\|new-file` | Runs one Claris tool directly, file to file, with the same path checks |
 
-Every editing command takes `-m "note"` for the log and `--dry-run` to write the patch without applying it. More in [examples and recipes](https://github.com/Abdeltoto/patchwork-filemaker-mcp/tree/main/examples).
+Every editing command takes `-m "note"` for the log and `--dry-run` to write the patch without applying it. `-C DIR`, before the command, picks the project folder: `patchwork -C ~/crm status`. Without it, Patchwork uses `PATCHWORK_PROJECT`, then the nearest `.patchwork/` from the current folder upward. `open` is the exception: it creates `.patchwork/` in the `-C` folder, else in the current folder. `patchwork COMMAND --help` lists every option. More in [examples and recipes](https://github.com/Abdeltoto/patchwork-filemaker-mcp/tree/main/examples).
 
 </details>
+
+## Environment variables
+
+Patchwork reads these from the environment. It never loads a `.env` file: set them in your shell or in the `env` block of your MCP client. [`.env.example`](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/.env.example) lists them.
+
+| Variable | Used for |
+|---|---|
+| `PATCHWORK_PASSWORD` | Password of the account given to `open`. Required unless `--no-password`. Never printed |
+| `PATCHWORK_KEY` | Encryption key, for files with encryption at rest. Passed to FMUpgradeTool when a patch is validated or applied, not when the file is copied or exported. Never printed. A full session on an encrypted file is to be confirmed |
+| `PATCHWORK_PROJECT` | Project folder holding `.patchwork/`, when `-C` is not given. Not used by `open` |
+| `FM_UPGRADE_TOOL`, `FM_DEVELOPER_TOOL` | Paths of the Claris tools, when `doctor` does not find them |
+| `PATCHWORK_ALLOW_OUTSIDE` | `1` lets MCP tools use `force` outside the project folder. Not in release 0.1.0 |
+| `PATCHWORK_TOOL_TIMEOUT` | Seconds before a Claris tool that does not answer is stopped. Default 1800. Not in release 0.1.0 |
+| `PATCHWORK_SAMPLE` | Tests only: a copy of the Claris Invoice solution for the end-to-end tests |
+
+## Run from source and test
+
+```bash
+git clone https://github.com/Abdeltoto/patchwork-filemaker-mcp
+cd patchwork-filemaker-mcp
+python -m venv .venv
+. .venv/bin/activate                 # Windows PowerShell: .venv\Scripts\Activate.ps1
+pip install -e ".[image]"
+python -m unittest discover -s tests
+```
+
+The unit tests need neither FileMaker nor the Claris tools. The end-to-end tests, lint and coverage checks are in [CONTRIBUTING.md](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/CONTRIBUTING.md).
+
+## Repository layout
+
+```
+src/patchwork/        the package: CLI, MCP server, FileMaker logic
+  skills/, templates/ what `patchwork init` copies into a project
+tests/                unit tests, fixtures/ (fictional exports), test_integration.py (real files)
+docs/                 guides, MCP tools reference, decisions/
+examples/             recipes and the Maple & Oak brand
+scripts/              extract-fms-tools.ps1 (Claris tools from the .msi, Windows)
+brand.schema.json     JSON schema of brand.json
+server.json           entry for the MCP registry
+```
+
+How the modules fit together: [ARCHITECTURE.md](https://github.com/Abdeltoto/patchwork-filemaker-mcp/blob/main/ARCHITECTURE.md).
 
 ## The FMUpgradeTool field guide
 

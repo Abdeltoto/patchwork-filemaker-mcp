@@ -44,6 +44,10 @@ flowchart LR
    - identical: FMUpgradeTool skipped the patch. The version is refused and the patch is kept for inspection;
    - different: Patchwork lists what was added, changed and deleted, by kind and name. If the operation expected a specific line, such as `+ field Clients::Status`, and it is missing, the version is rolled back.
 
+When a version adds steps that act outside the file (Send Event, Perform AppleScript, Perform JavaScript in Web Viewer, Insert from URL, Open URL, Send Mail, Install Plug-In File), the diff ends with a line such as `! 1 new Insert from URL step(s): they run when the file is used, check them before opening it`. Not in release 0.1.0.
+
+Each Claris tool is stopped after `PATCHWORK_TOOL_TIMEOUT` seconds (default 1800) if it does not answer, and the change is refused. Not in release 0.1.0.
+
 The diff often shows more than the object you touched. Deleting a layout, for example, also reports `~ script Delete ALL Records` when that script navigates to it. That is the moment to check the script.
 
 ## FMUpgradeTool changes UUIDs

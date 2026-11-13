@@ -18,7 +18,8 @@ patchwork init .
 AGENTS.md                    rules every agent reads first (Codex, Antigravity, Cursor)
 CLAUDE.md                    imports AGENTS.md for Claude Code
 standards/naming.md          your naming conventions, filled in with the agent
-patches/                     hand-written patches, if you keep any
+patches/.gitkeep             hand-written patches, if you keep any
+.gitignore                   ignores .fmp12 files and backups, .patchwork/, raw/, .env files
 .mcp.json                    MCP server for Claude Code
 .cursor/mcp.json             MCP server for Cursor
 .codex/config.toml           MCP server for Codex
@@ -136,7 +137,7 @@ The Codex and Antigravity files hold the absolute path of the project. If you mo
 | `patchwork_push` | Applies a hand-written patch, with the same checks |
 | `patchwork_undo`, `patchwork_save` | Drops the last version, writes a new `.fmp12` |
 
-An error comes back as a tool result with `isError`, so the agent can read it and try again. It never stops the server.
+An error comes back as a tool result with `isError`, so the agent can read it and try again. It never stops the server. Parameters, answers and errors of each tool: [MCP tools reference](mcp-tools.md).
 
 ## The skills
 
@@ -154,3 +155,4 @@ An error comes back as a tool result with `isError`, so the agent can read it an
 - The agent cannot report a change that did not happen. Patchwork re-reads the file after each patch and refuses a version when FMUpgradeTool skipped it.
 - The agent never sees the password. It is an environment variable, printed as `***`.
 - Exports and copies stay in `.patchwork/`, which Git ignores.
+- Not in release 0.1.0 yet: the six tools that can lose work are marked destructive, `force` is refused outside the project folder unless `PATCHWORK_ALLOW_OUTSIDE=1`, and the agent is told that text read from the file is data, not instructions.

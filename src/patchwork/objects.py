@@ -370,6 +370,8 @@ def split_field(qualified: str) -> tuple[str, str]:
 
 
 def normalize(text: str) -> str:
+    # The header names the version file (v001.fmp12...) and <UUID> attributes record who changed an object and when
+    # (modifications, userName, accountName, timestamp): bookkeeping, not content, so diffs ignore them.
     text = re.sub(r"<FMSaveAsXML[^>]*>", "", text, count=1)
     return re.sub(r"<UUID [^>]*>", "<UUID>", text)
 

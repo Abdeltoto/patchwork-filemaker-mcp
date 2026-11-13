@@ -1,7 +1,8 @@
 """MCP server over stdio (newline-delimited JSON-RPC 2.0), standard library only.
 
-Works with any MCP client: Claude Code, Claude Desktop, Cursor, Codex, VS Code.
-    patchwork mcp [--project DIR]
+Works with any MCP client that starts a stdio server: Claude Code, Cursor, Codex, Antigravity.
+    patchwork [-C DIR] mcp
+Reference: docs/mcp-tools.md
 """
 
 from __future__ import annotations
