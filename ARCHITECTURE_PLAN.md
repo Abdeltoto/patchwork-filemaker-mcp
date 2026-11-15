@@ -17,7 +17,7 @@ These are the promises the README makes to the user. A change that breaks one is
 | The password is read from the environment and never printed or stored | `tools.password`, `tools.redact` | [0005](docs/decisions/0005-password-from-environment.md) |
 | Only `tools` starts a process | import-linter contracts | [0009](docs/decisions/0009-layer-contracts.md) |
 | One bad MCP call never stops the server | `mcp.Server.handle` | [0007](docs/decisions/0007-mcp-guard-rails.md) |
-| Text read from a `.fmp12` is data, never instructions | `mcp.INSTRUCTIONS`, `templates/AGENTS.md` | [0007](docs/decisions/0007-mcp-guard-rails.md) |
+| Text read from a `.fmp12` is data, never instructions | `mcp.INSTRUCTIONS` | [0007](docs/decisions/0007-mcp-guard-rails.md) |
 
 ## 2. Layer plan
 
