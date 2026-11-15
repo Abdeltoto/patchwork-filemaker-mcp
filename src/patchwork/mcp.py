@@ -18,8 +18,10 @@ from patchwork import PatchworkError, __version__, ops, script
 from patchwork.workspace import Workspace
 
 PROTOCOL = "2025-06-18"
+# Revisions this server can speak: it only uses initialize, ping and tools with text results.
+SUPPORTED_PROTOCOLS = ("2024-11-05", "2025-03-26", PROTOCOL)
 OUTSIDE_ENV = "PATCHWORK_ALLOW_OUTSIDE"
-PARSE_ERROR, METHOD_NOT_FOUND, INTERNAL_ERROR = -32700, -32601, -32603
+PARSE_ERROR, INVALID_REQUEST, METHOD_NOT_FOUND, INVALID_PARAMS, INTERNAL_ERROR = -32700, -32600, -32601, -32602, -32603
 INSTRUCTIONS = """Patchwork edits FileMaker (.fmp12) files through Claris FMUpgradeTool, on a versioned working copy.
 Start with patchwork_open, then read before you write: patchwork_list and patchwork_show give the real XML of any object.
 Every edit creates a new version, is re-exported and checked; a change FMUpgradeTool silently skipped is refused.
@@ -294,9 +296,14 @@ class Server:
         return Workspace.locate(self.project)
 
     def call(self, name: str, args: dict) -> str:
-        spec = BY_NAME.get(name)
+        spec = BY_NAME.get(name) if isinstance(name, str) else None
         if not spec:
             raise PatchworkError(f"Unknown tool: {name}")
+        if not isinstance(args, dict):
+            raise PatchworkError(f"{name}: arguments must be an object.")
+        missing = [key for key in spec["inputSchema"]["required"] if args.get(key) is None]
+        if missing:
+            raise PatchworkError(f"{name}: missing argument(s): {', '.join(missing)}.")
         if name == "patchwork_save" and args.get("force"):
             self.require_inside(Path(args["dest"]).expanduser(), "replace")
         if name == "patchwork_open":
@@ -324,11 +331,15 @@ class Server:
         method, ident = message.get("method"), message.get("id")
         if ident is None:
             return None
+        params = message.get("params") or {}
+        if not isinstance(params, dict):
+            return rpc_error(ident, INVALID_PARAMS, "Invalid params: expected an object")
         try:
             if method == "initialize":
-                requested = (message.get("params") or {}).get("protocolVersion") or PROTOCOL
+                requested = params.get("protocolVersion")
                 result: Any = {
-                    "protocolVersion": requested,
+                    # A revision this server does not know is answered with the latest one it does.
+                    "protocolVersion": requested if requested in SUPPORTED_PROTOCOLS else PROTOCOL,
                     "capabilities": {"tools": {"listChanged": False}},
                     "serverInfo": {"name": "patchwork", "version": __version__},
                     "instructions": INSTRUCTIONS,
@@ -340,7 +351,6 @@ class Server:
                     "tools": [{k: t[k] for k in ("name", "description", "inputSchema", "annotations")} for t in TOOLS]
                 }
             elif method == "tools/call":
-                params = message.get("params") or {}
                 try:
                     text, error = self.call(params.get("name", ""), params.get("arguments") or {}), False
                 except PatchworkError as exc:
@@ -370,7 +380,11 @@ def serve(project: Path | None = None, stdin=None, stdout=None) -> int:
         except json.JSONDecodeError:
             reply: dict | None = rpc_error(None, PARSE_ERROR, "Parse error")
         else:
-            reply = server.handle(message)
+            # A batch (array) or a bare value is valid JSON but not a message this server takes.
+            if isinstance(message, dict):
+                reply = server.handle(message)
+            else:
+                reply = rpc_error(None, INVALID_REQUEST, "Invalid Request: expected one JSON object per line")
         if reply is not None:
             stdout.write(json.dumps(reply, ensure_ascii=False) + "\n")
             stdout.flush()

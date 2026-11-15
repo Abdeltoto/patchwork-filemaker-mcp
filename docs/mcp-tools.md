@@ -7,7 +7,7 @@
 - Transport: one JSON-RPC 2.0 message per line on stdin, one reply per line on stdout.
 - Methods: `initialize`, `ping`, `tools/list`, `tools/call`. Any other method gets error `-32601`.
 - A message without `id` (a notification such as `notifications/initialized`) gets no reply.
-- `initialize` answers with the protocol version the client asked for (default `2025-06-18`), `serverInfo` `{"name": "patchwork", "version": ...}` and `instructions` for the agent.
+- `initialize` answers with the protocol version the client asked for when it is `2024-11-05`, `2025-03-26` or `2025-06-18`, and with `2025-06-18` otherwise. It also returns `serverInfo` `{"name": "patchwork", "version": ...}` and `instructions` for the agent.
 
 Start it by hand to try it:
 
@@ -48,9 +48,12 @@ Dry run: patch written to C:\...\.patchwork\p002.xml
 |---|---|
 | A problem the user can fix (object not found, delete refused, path refused, FMUpgradeTool skipped the patch) | A normal result with `"isError": true` and the message as text. The server keeps running. |
 | Unknown tool | `isError: true`, text `Unknown tool: NAME`. |
-| A required argument is missing | JSON-RPC error `-32603`, for example `KeyError: 'kind'`. The arguments are not validated against the schema. |
+| A required argument is missing or `null`, or `arguments` is not an object | `isError: true`, text `patchwork_show: missing argument(s): kind.` Only the presence of required arguments is checked, not their types. |
+| An unexpected failure inside a tool | JSON-RPC error `-32603`, `ExceptionName: message`. The server keeps running. |
 | Unknown method | JSON-RPC error `-32601`, `Method not found: resources/list`. |
 | A line that is not JSON | JSON-RPC error `-32700`, `Parse error`, with `id: null`. |
+| A line that is JSON but not an object (a batch array, a bare value) | JSON-RPC error `-32600`, `Invalid Request`, with `id: null`. |
+| `params` that is not an object | JSON-RPC error `-32602`. |
 
 Examples from the real session:
 

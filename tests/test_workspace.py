@@ -194,6 +194,50 @@ class McpTests(unittest.TestCase):
             reply["result"]["instructions"],
         )
 
+    def test_a_message_that_is_not_an_object_does_not_stop_the_server(self):
+        stdin = io.StringIO('[1, 2]\n5\n"hello"\n{"jsonrpc": "2.0", "id": 7, "method": "ping"}\n')
+        stdout = io.StringIO()
+        serve(None, stdin, stdout)
+        replies = [json.loads(line) for line in stdout.getvalue().splitlines()]
+        self.assertEqual([r["error"]["code"] for r in replies[:3]], [-32600] * 3)
+        self.assertEqual(replies[3], {"jsonrpc": "2.0", "id": 7, "result": {}})
+
+    def test_params_that_are_not_an_object_are_refused(self):
+        reply = self.converse({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": ["patchwork_status"]})[0]
+        self.assertEqual(reply["error"]["code"], -32602)
+
+    def test_a_missing_argument_is_a_tool_error_that_names_it(self):
+        replies = self.converse(
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "patchwork_open"}},
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {"name": "patchwork_show", "arguments": {"kind": "script", "name": None}},
+            },
+            {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "patchwork_show", "arguments": 3}},
+            {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": ["x"]}},
+        )
+        self.assertTrue(all(r["result"]["isError"] for r in replies))
+        self.assertEqual(
+            replies[0]["result"]["content"][0]["text"], "patchwork_open: missing argument(s): source, account."
+        )
+        self.assertEqual(replies[1]["result"]["content"][0]["text"], "patchwork_show: missing argument(s): name.")
+        self.assertIn("arguments must be an object", replies[2]["result"]["content"][0]["text"])
+        self.assertIn("Unknown tool", replies[3]["result"]["content"][0]["text"])
+
+    def test_initialize_answers_with_a_protocol_version_it_supports(self):
+        def version(params):
+            return self.converse({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": params})[0]["result"][
+                "protocolVersion"
+            ]
+
+        self.assertEqual(version({"protocolVersion": "2024-11-05"}), "2024-11-05")
+        self.assertEqual(version({"protocolVersion": "2025-06-18"}), "2025-06-18")
+        self.assertEqual(version({"protocolVersion": "1999-01-01"}), "2025-06-18")
+        self.assertEqual(version({"protocolVersion": ["2025-06-18"]}), "2025-06-18")
+        self.assertEqual(version({}), "2025-06-18")
+
     def test_errors_come_back_as_tool_errors(self):
         with tempfile.TemporaryDirectory() as tmp:
             reply = self.converse(
@@ -225,15 +269,18 @@ class McpTests(unittest.TestCase):
         )
 
     def test_an_unexpected_failure_is_an_internal_error(self):
-        reply = self.converse(
-            {
-                "jsonrpc": "2.0",
-                "id": 6,
-                "method": "tools/call",
-                "params": {"name": "patchwork_open", "arguments": {"account": "Admin"}},
-            }
-        )[0]
-        self.assertEqual(reply, {"jsonrpc": "2.0", "id": 6, "error": {"code": -32603, "message": "KeyError: 'source'"}})
+        call = {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "tools/call",
+            "params": {"name": "patchwork_open", "arguments": {"source": "a.fmp12", "account": "Admin"}},
+        }
+        with mock.patch.object(ops, "open_file", side_effect=RuntimeError("boom")):
+            replies = self.converse(call, {"jsonrpc": "2.0", "id": 7, "method": "ping"})
+        self.assertEqual(
+            replies[0], {"jsonrpc": "2.0", "id": 6, "error": {"code": -32603, "message": "RuntimeError: boom"}}
+        )
+        self.assertEqual(replies[1]["result"], {})
 
     def test_unknown_tool_is_a_tool_error(self):
         reply = self.converse({"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "nope"}})[0]

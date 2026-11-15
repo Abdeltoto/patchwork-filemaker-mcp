@@ -20,6 +20,12 @@ Not published on PyPI yet: `pip install filemaker-patchwork` still installs 0.1.
 - The six MCP tools that can lose work (`open`, `replace`, `delete`, `push`, `undo`, `save`) declare `destructiveHint: true`. All tools said `false` before.
 - The `image` extra needs Pillow 13 or later on Python 3.11+, and Pillow 12.3 or later on Python 3.10.
 
+### Fixed
+
+- MCP: a line that is valid JSON but not an object, such as a batch `[...]`, stopped the server with a traceback. It now gets error `-32600` and the server keeps running. `params` that is not an object gets `-32602`.
+- MCP: a `tools/call` with a required argument missing answered `-32603 KeyError`. It now answers a tool error that names the argument, for example `patchwork_open: missing argument(s): source, account.`
+- MCP: `initialize` echoed any protocol version the client sent. It now answers `2025-06-18` unless the client asks for `2024-11-05` or `2025-03-26`.
+
 ### Security
 
 - A Claris tool in the current folder is never run, even when `PATH` contains `.` (relative `PATH` entries are skipped).
