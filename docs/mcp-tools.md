@@ -76,7 +76,7 @@ Every editing tool can also answer with one of these, and then no version is rec
 
 ## Annotations
 
-`tools/list` gives each tool `readOnlyHint`, `destructiveHint` and `idempotentHint`. Six tools are marked destructive: `patchwork_open`, `patchwork_replace`, `patchwork_delete`, `patchwork_push`, `patchwork_undo`, `patchwork_save`. In release 0.1.0 every tool says `destructiveHint: false`.
+`tools/list` gives each tool a `title`, a description of every parameter, and `readOnlyHint`, `destructiveHint` and `idempotentHint`. Six tools are marked destructive: `patchwork_open`, `patchwork_replace`, `patchwork_delete`, `patchwork_push`, `patchwork_undo`, `patchwork_save`. In release 0.1.0 every tool says `destructiveHint: false`.
 
 ## Common editing parameters
 
@@ -207,7 +207,7 @@ Errors: `script not found: NAME`, `No script in this file uses the step 'NAME'. 
 
 ### `patchwork_uses`
 
-What references an object (certain) and where its name appears in calculations (possible). Call it before a delete or a rename. Not marked read-only, although it changes nothing.
+What references an object (certain) and where its name appears in calculations (possible). Call it before a delete or a rename. Read-only (not marked so in release 0.1.0).
 
 | Parameter | Type | Required | Notes |
 |---|---|:-:|---|
