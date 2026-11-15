@@ -147,4 +147,4 @@ sequenceDiagram
 
 ## Decisions
 
-The reasons behind these choices are in [docs/decisions/](docs/decisions/).
+The reasons behind these choices are in [docs/decisions/](docs/decisions/). The rules to keep and the proposed next steps are in [ARCHITECTURE_PLAN.md](ARCHITECTURE_PLAN.md).
