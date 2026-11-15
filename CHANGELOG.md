@@ -20,6 +20,10 @@ Not published on PyPI yet: `pip install filemaker-patchwork` still installs 0.1.
 - The six MCP tools that can lose work (`open`, `replace`, `delete`, `push`, `undo`, `save`) declare `destructiveHint: true`. All tools said `false` before.
 - The `image` extra needs Pillow 13 or later on Python 3.11+, and Pillow 12.3 or later on Python 3.10.
 
+### Fixed
+
+- Looking for the Claris tools no longer starts a `ver` subprocess on Windows with Python 3.10 (`os.name` instead of `platform.system()`). The test suite failed there for that reason.
+
 ### Security
 
 - A Claris tool in the current folder is never run, even when `PATH` contains `.` (relative `PATH` entries are skipped).
