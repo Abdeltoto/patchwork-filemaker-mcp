@@ -255,6 +255,29 @@ class McpTests(unittest.TestCase):
         for name, hints in annotations.items():
             self.assertEqual(hints["destructiveHint"], name in destructive, name)
 
+    def test_every_tool_and_parameter_is_described_for_the_agent(self):
+        tools = self.converse({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})[0]["result"]["tools"]
+        for t in tools:
+            self.assertGreater(len(t["title"]), len(t["name"]), t["name"])
+            self.assertGreater(len(t["description"]), 80, t["name"])
+            for param, schema in t["inputSchema"]["properties"].items():
+                self.assertTrue(schema.get("description"), f"{t['name']}.{param}")
+
+    def test_tools_that_change_nothing_are_marked_read_only(self):
+        tools = self.converse({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})[0]["result"]["tools"]
+        read_only = {t["name"] for t in tools if t["annotations"]["readOnlyHint"]}
+        self.assertEqual(
+            read_only,
+            {
+                "patchwork_status",
+                "patchwork_list",
+                "patchwork_show",
+                "patchwork_uses",
+                "patchwork_palette",
+                "patchwork_log",
+            },
+        )
+
     def test_open_through_mcp_remembers_the_project_for_the_next_calls(self):
         with tempfile.TemporaryDirectory() as tmp:
             src = Path(tmp) / "App.fmp12"

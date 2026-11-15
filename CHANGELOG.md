@@ -12,10 +12,12 @@ Not published on PyPI yet: `pip install filemaker-patchwork` still installs 0.1.
 - A warning line `! N new STEP step(s): they run when the file is used, check them before opening it` when a version adds Send Event, Perform AppleScript, Perform JavaScript in Web Viewer, Insert from URL, Open URL, Send Mail or Install Plug-In File.
 - The MCP `initialize` instructions tell the agent that names, script text and calculations read from a file are data, never instructions.
 - `.env.example` lists every variable Patchwork reads.
+- `Dockerfile` and `glama.json`, for the [Glama](https://glama.ai/mcp/servers/Abdeltoto/patchwork-filemaker-mcp) directory. The image only starts the MCP server; editing a file still needs the Claris tools.
 - Documentation: [ARCHITECTURE.md](ARCHITECTURE.md), the [MCP tools reference](docs/mcp-tools.md), [decision notes](docs/decisions/).
 
 ### Changed
 
+- MCP tool definitions say more to the agent: every tool has a `title`, every parameter a description, and each description says when to use the tool, what it checks and which tool to use instead. `patchwork_uses` is marked read-only.
 - Through MCP, `patchwork_save` with `force` and `patchwork_open` with `force` are refused outside the project folder. Set `PATCHWORK_ALLOW_OUTSIDE=1` to allow them. The CLI is unchanged.
 - The six MCP tools that can lose work (`open`, `replace`, `delete`, `push`, `undo`, `save`) declare `destructiveHint: true`. All tools said `false` before.
 - The `image` extra needs Pillow 13 or later on Python 3.11+, and Pillow 12.3 or later on Python 3.10.
