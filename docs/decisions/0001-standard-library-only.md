@@ -11,7 +11,7 @@ Patchwork runs on the machine of a FileMaker developer, often on Windows, and is
 ## Consequences
 
 - `pip install filemaker-patchwork` installs nothing else.
-- The MCP server is written by hand in `mcp.py` (JSON-RPC over stdio), without an MCP SDK. Its schemas are not validated: a missing required argument gives a JSON-RPC error `-32603`.
+- The MCP server is written by hand in `mcp.py` (JSON-RPC over stdio), without an MCP SDK. It checks that required arguments are present, not their types: a missing one gives a tool error that names it.
 - The export XML is read with regular expressions, not an XML parser. *To be confirmed:* whether this was chosen to keep the exact text of each block (useful to build replace patches) or only to avoid a dependency.
 - Development tools (ruff, mypy, coverage, import-linter, pip-audit, bandit) are installed in CI only, with pinned versions.
 - CONTRIBUTING.md keeps the rule: "Standard library only at runtime. Pillow stays optional."
