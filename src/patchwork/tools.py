@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import os
-import platform
 import subprocess
 from pathlib import Path
 
@@ -23,7 +22,7 @@ LOCAL_TOOLS = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local" / "shar
 
 
 def candidates(name: str) -> list[Path]:
-    exe = name + (".exe" if platform.system() == "Windows" else "")
+    exe = name + (".exe" if os.name == "nt" else "")
     found = []
     override = os.environ.get(PATH_VARIABLES.get(name, "FM_DEVELOPER_TOOL"))
     if override:
